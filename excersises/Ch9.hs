@@ -19,7 +19,7 @@ choices xs = [ x | ys <- subs xs, x <- perms ys ]
 
 rmone :: Eq a => [a] -> a -> [a]
 rmone [] _ = []
-rmone (x:xs) y = if y == x then xs else x : (rmone xs y)
+rmone (x:xs) y = if y == x then xs else x:(rmone xs y)
 
 isChoice :: Eq a => [a] -> [a] -> Bool
 isChoice _ [] = True
@@ -54,18 +54,18 @@ instance Show Op where
 	show Exp  = "^"
 
 valid :: Op -> Int -> Int -> Bool
-valid Add x y = x >= y
-valid Sub x y = True
+valid Add x y  = x >= y
+valid Sub x y  = True
 valid Mult x y = (x /= 1) && (y /= 1) && (x >= y)
-valid Div x y = (y /= 0) && (y /= 1) && (x`mod`y == 0)
-valid Exp x y = (x /= 0) && (y >= 0) && (x /= 1) && (y /= 1)
+valid Div x y  = (y /= 0) && (y /= 1) && (x`mod`y == 0)
+valid Exp x y  = (x /= 0) && (y >= 0) && (x /= 1) && (y /= 1)
 
 apply :: Op -> Int -> Int -> Int
-apply Add x y = x+y
-apply Sub x y = x-y
+apply Add x y  = x+y
+apply Sub x y  = x-y
 apply Mult x y = x*y
-apply Div x y = x`div`y
-apply Exp x y = x^y
+apply Div x y  = x`div`y
+apply Exp x y  = x^y
 
 instance Show Expr where
 	show (Val n) = show n
@@ -86,7 +86,7 @@ eval (App o l r) = [apply o x y | x <- eval l, y <- eval r, valid o x y]
 
 exprs :: [Int] -> [Expr]
 exprs [n] = [Val n]
-exprs ns = [e | (ls,rs) <- splits ns, l <- exprs ls, r <- exprs rs, e <- [App o l r | o <- ops]]
+exprs ns  = [e | (ls,rs) <- splits ns, l <- exprs ls, r <- exprs rs, e <- [App o l r | o <- ops]]
 
 type Result = (Int,Expr)
 
@@ -94,9 +94,9 @@ combine :: Result -> Result -> [Result]
 combine (lv,le) (rv,re) = [(apply o lv rv, (App o le re)) | o <- ops, valid o lv rv]
 
 results :: [Int] -> [Result]
-results [] = []
+results []  = []
 results [n] = [(n, Val n)]
-results ns = [x | (rs,ls) <- splits ns, l <- results ls, r <- results rs, x <- combine l r]
+results ns  = [x | (rs,ls) <- splits ns, l <- results ls, r <- results rs, x <- combine l r]
 
 solution ns n e = isChoice ns (values e) && eval e == [n]
 
