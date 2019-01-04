@@ -127,12 +127,39 @@ nonEmptyListOf p =  do
     return (x:xs)
 
 listOf :: Parser a -> Parser [a]
-listOf p = emptyList <|> nonEmptyList p
+listOf p = emptyList <|> nonEmptyListOf p
 
 integers :: Parser [Int]
 integers = listOf integer
 
-main = do
-    inp <- getContents
-    print . fmap fst . parse (some $ string "abc\n") $ inp
+-- Arithmetic Expressions
+
+tryAlso :: Alternative m => (a -> m a) -> a -> m a
+tryAlso p x = p x <|> pure x
+
+(<<) :: Monad m => m a -> m b -> m a
+pa << pb = do
+    x <- pa
+    pb
+    return x
+
+expr :: Parser Int
+expr = term >>= tryAlso plusExpr
+    where plusExpr t = symbol "+" >> fmap (t+) expr
+    
+term :: Parser Int
+term = factor >>= tryAlso multTerm
+    where multTerm f = symbol "*" >> fmap (f*) term
+
+factor :: Parser Int
+factor = natural <|> (symbol "(" >> expr << symbol ")")
+
+runParser :: Parser a -> String -> a
+runParser p xs = case (parse p xs) of
+    Just (n,[]) -> n
+    Just (_,leftovers) -> error ("leftovers: " ++ leftovers)
+    Nothing -> error "invalid input"
+
+
+
 
