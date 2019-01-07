@@ -124,15 +124,15 @@ til gen f = do
 charToString :: Char -> String
 charToString = replicate 1
 
-type Parser a = State String a
+type Input a = State String a
 
-parseChar :: Parser Char
+parseChar :: Input Char
 parseChar = do
     (x:xs) <- get
     put xs
     return x
 
-parseDigit :: Parser Int
+parseDigit :: Input Int
 parseDigit = parseChar `til` (readMaybe . charToString)
 
 reader :: Grid -> State String Grid
