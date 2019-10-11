@@ -5,7 +5,6 @@ import Data.Tuple
 import Prelude hiding (gcd)
 
 -- interestingly, will automatically flip order if b > a
-
 gcd :: Int -> Int -> Int
 gcd a 0 = a
 gcd a b = gcd b (a`mod`b)
@@ -18,8 +17,8 @@ euclidean' base a b =
     if dot base b == 0 then a
     else euclidean' base b r
     where
-    q = div (dot base a) (dot base b)
     r = a `plus` scale (-q) b
+    q = div (dot base a) (dot base b)
 
 dot :: (Int,Int) -> (Int,Int) -> Int
 dot (a,b) (r,s) = (a*r) + (b*s)
