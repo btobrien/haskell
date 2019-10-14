@@ -29,19 +29,19 @@ primes = sieve [2..]
 primesUnder :: Int -> [Int]
 primesUnder n = sieve [2..(n-1)]
 
-largestPrimeUnder :: Int -> Int
-largestPrimeUnder = last . primesUnder
+largestPrime :: Int -> Int
+largestPrime = last . primesUnder
 
--- sorted smallest -> largest
-denominators :: Int -> [Int]
-denominators n = filter (divides n) [2..half] ++ [n]
+-- result sorted smallest -> largest
+dividers :: Int -> [Int]
+dividers n = filter (divides n) [2..half] ++ [n]
     where half = n `div` 2 
 
-smallestDenominator :: Int -> Int
-smallestDenominator = head . denominators
+smallestDivider :: Int -> Int
+smallestDivider = head . dividers
 
 factor :: Int -> [Int]
-factor = unfoldr (\n -> if n == 1 then Nothing else let d = smallestDenominator n in Just (d, n `div` d))
+factor = unfoldr $ \n -> if n == 1 then Nothing else let d = smallestDivider n in Just (d, n `div` d)
 
 isPrime :: Int -> Bool
 isPrime n = factor n == [n]

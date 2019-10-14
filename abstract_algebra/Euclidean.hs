@@ -2,9 +2,10 @@
 
 import Control.Monad.State
 import Data.Tuple
-import Prelude hiding (gcd)
+import Prelude hiding (gcd, lcm)
 
 -- interestingly, will automatically flip order if b > a
+-- haadles negatives?
 gcd :: Int -> Int -> Int
 gcd a 0 = a
 gcd a b = gcd b (a`mod`b)
@@ -28,3 +29,12 @@ plus (a,b) (r,s) = (a+r,b+s)
 
 scale :: Int -> (Int,Int) -> (Int,Int)
 scale k (a,b) = (k*a,k*b)
+
+-- generator implementation
+-- only handles positive
+gcd' :: Int -> Int -> Int
+gcd' a b = minimum . filter (>0) . takeWhile (/=a) . tail . iterate (\n -> (a + n) `mod` b) $ a
+
+
+lcm :: Int -> Int -> Int
+lcm a b = (a*) . fst . head . filter (\(x,y) -> a*x == b*y) $ [(x,y) | x <- [1..], y <- [1..x]]
