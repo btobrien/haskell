@@ -37,4 +37,4 @@ gcd' a b = minimum . filter (>0) . takeWhile (/=a) . tail . iterate (\n -> (a + 
 
 
 lcm :: Int -> Int -> Int
-lcm a b = (a*) . fst . head . filter (\(x,y) -> a*x == b*y) $ [(x,y) | x <- [1..], y <- [1..x]]
+lcm a b = (a*) . fst . head . filter (\(x,y) -> a*x == b*y) $ [(n-x,x) | n <- [2..], x <- [1..n]]
