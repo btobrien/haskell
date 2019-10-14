@@ -27,4 +27,24 @@ primes :: [Int]
 primes = sieve [2..]
 
 primesUnder :: Int -> [Int]
-primesUnder n = sieve [2..n]
+primesUnder n = sieve [2..(n-1)]
+
+largestPrimeUnder :: Int -> Int
+largestPrimeUnder = last . primesUnder
+
+-- sorted smallest -> largest
+denominators :: Int -> [Int]
+denominators n = filter (divides n) [2..half] ++ [n]
+    where half = n `div` 2 
+
+smallestDenominator :: Int -> Int
+smallestDenominator = head . denominators
+
+factor :: Int -> [Int]
+factor = unfoldr (\n -> if n == 1 then Nothing else let d = smallestDenominator n in Just (d, n `div` d))
+
+isPrime :: Int -> Bool
+isPrime n = factor n == [n]
+
+-- slow
+-- primeFilter = filter isPrime [2..]
