@@ -64,8 +64,8 @@ matching =
 fullMatch :: [Square] -> Bool
 fullMatch = fromMaybe False . fmap matching . sequence
 
-won :: Board -> Bool
-won board = check rows || check cols || check diags
+connected :: Board -> Bool
+connected board = check rows || check cols || check diags
     where 
         check = any fullMatch
         rows  = board
@@ -76,8 +76,8 @@ won board = check rows || check cols || check diags
 type Position = (Board,Piece)
 type Move = (Int,Piece)
 
-winning :: Position -> Bool
-winning = won . fst
+won :: Position -> Bool
+won = connected . fst
 
 squaresLeft :: Board -> Int
 squaresLeft = length . filter isNothing . concat
@@ -87,9 +87,9 @@ depth = subtract (maxIndex + 1) . squaresLeft
 
 valid :: Position -> Move -> Bool
 valid (board,piece) (i,nextPiece) = let pieces = concat board in
-    0 <= i && i < maxIndex &&
+    0 <= i && i <= maxIndex &&
     pieces !! i == Nothing &&
-    (squaresLeft board == 1 || not (nextPiece == piece && elem (Just nextPiece) pieces))
+    (squaresLeft board == 1 || not (nextPiece == piece || elem (Just nextPiece) pieces))
 
 update :: Piece -> Int -> Board -> Board
 update piece index board = chunksOf size $ before ++ [Just piece] ++ after
@@ -114,7 +114,7 @@ treeDepth (Node _ gs) = 1 + maximum (map treeDepth gs)
 
 moves :: Position -> [Position]
 moves pos 
-    | winning pos = []
+    | won pos = []
     | otherwise = catMaybes . map (flip move pos) $ (,) <$> [0..maxIndex] <*> pieces
 
 gametree :: Position -> Tree Position
@@ -125,7 +125,7 @@ data Player = First | Tie | Second -- order determines utility
 
 resultOf :: Position -> Player
 resultOf (board,_)
-    | won board = if (odd . depth) board then First else Second
+    | connected board = if (odd . depth) board then First else Second
     | otherwise = Tie
 
 -- generalize mini max algo
@@ -140,8 +140,54 @@ minimax (Node position ts) = Node (position, winner, mindepth + 1) ts'
             mindepth  = minimum [depth | Node (_,result,depth) _ <- ts', result == winner]
             ts' = map minimax ts
 
-wins :: Position -> [Position]
-wins = filter winning . moves
+pickmove :: MiniMaxTree -> Position
+pickmove (Node (_,best,depth) ts) = head [g' | Node (g',p',d') _ <- ts, p'==best, d'==(depth-1)]
 
-losers :: Position -> [Position]
-losers = filter (any (not . null . wins) . moves) . moves
+finalresult :: MiniMaxTree -> Player
+finalresult (Node (_,result,_) _) = result
+
+bestmove :: Position -> Position
+bestmove = pickmove . minimax . gametree
+
+evaluate :: Position -> Player
+evaluate = finalresult . minimax . gametree
+
+wins :: Int -> Position -> [Board]
+wins 1 = nub . map fst . filter won . moves
+wins n = nub . map fst . filter (all (losing (n-1)) . moves) . moves  
+
+winning :: Int -> Position -> Bool
+winning n = not . null . wins n
+
+losing :: Int -> Position -> Bool
+losing n = all (any (winning n) . moves) . moves
+
+losers :: Int -> Position -> [Position]
+losers n = filter (any (winning n) . moves) . moves
+
+iterativeDeepening pos = listToMaybe . concat . map (flip wins pos) $ [1..(squaresLeft (fst pos))]
+
+showSquare :: Square -> String
+showSquare Nothing = "----"
+showSquare (Just (a,b,c,d)) = concat . map show $ [fromEnum a,fromEnum b,fromEnum c,fromEnum d]
+
+showBoard :: Board -> String
+showBoard = intercalate "\n\n" . map (intercalate " ") . (map . map) showSquare
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
