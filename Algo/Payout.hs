@@ -1,32 +1,29 @@
-
 import Data.Either
 import Data.List
 
-type Result = (Int, String); valueOf = fst; nameOf = snd; 
+type Player = (Int, String); valueOf = fst; nameOf = snd; 
 type Payout = (Int, (String, String))
 
-main = getContents >>= putStrLn . either showError showPayouts . calculatePayouts . readResults
+main = getContents >>= putStrLn . either showError showPayouts . calculatePayouts . readPlayer
     where
-    readResults = map ((\(name:val:_) -> (read val, name)) . words) . lines
+    readPlayer = map ((\(name:val:_) -> (read val, name)) . words) . lines
     showPayouts = unlines . map (\(val, (from, to)) -> from ++ " -> " ++ to ++ ": " ++ show val)
     showError = ("ERROR: results add to "++) . show 
     
-calculatePayouts :: [Result] -> Either Int [Payout] 
-calculatePayouts results = if net /= 0 then (Left net) else Right (unfoldr selectPayout (losers,winners))
-    where
-    net = sum . map valueOf $ results
-    (losers,winners) = partition ((<0) . valueOf) results
+calculatePayouts :: [Player] -> Either Int [Payout] 
+calculatePayouts players = if net /= 0 then Left net else Right (unfoldr selectPayout players)
+    where net = sum . map valueOf $ players
 
-selectPayout :: ([Result], [Result]) -> Maybe (Payout, ([Result],[Result]))
-selectPayout (losers,winners) = if null losers || null winners then Nothing else Just (payout, adjusted)
+selectPayout :: [Player] -> Maybe (Payout, [Player])
+selectPayout players = if null players then Nothing else Just (payout, updated)
     where
-    loser = minimum losers
-    winner = maximum winners
+    loser = minimum players
+    winner = maximum players
     amount = min (abs . valueOf $ loser) (valueOf winner) 
-    payout = (amount, (nameOf loser, nameOf winner))
-    adjusted = (,) 
-        (adjust (nameOf loser)  (valueOf loser  + amount) losers)
-        (adjust (nameOf winner) (valueOf winner - amount) winners)
+    payout = (,) amount (nameOf loser, nameOf winner)
+    updated =
+        update (nameOf loser)  (valueOf loser  + amount) .
+        update (nameOf winner) (valueOf winner - amount) $ players
 
-adjust :: String -> Int -> [Result] -> [Result]
-adjust name new = filter ((0/=) . valueOf) . ((new,name):) . filter ((name/=) . nameOf)
+update :: String -> Int -> [Player] -> [Player]
+update name new = filter ((0/=) . valueOf) . ((new,name):) . filter ((name/=) . nameOf)
