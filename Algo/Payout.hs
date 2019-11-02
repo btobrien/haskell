@@ -1,7 +1,7 @@
 import Data.Either
 import Data.List
 
-type Player = (Int, String); valueOf = fst; nameOf = snd; 
+type Player = (Int, String); valueOf = fst; nameOf = snd
 type Payout = (Int, (String, String))
 
 main = getContents >>= putStrLn . either showError showPayouts . calculatePayouts . readPlayers
@@ -15,15 +15,18 @@ calculatePayouts players = if net /= 0 then Left net else Right (unfoldr selectP
     where net = sum . map valueOf $ players
 
 selectPayout :: [Player] -> Maybe (Payout, [Player])
-selectPayout players = if null players then Nothing else Just (payout, updated)
+selectPayout players = if null players then Nothing else Just (payout, players')
     where
     loser = minimum players
     winner = maximum players
     amount = min (abs . valueOf $ loser) (valueOf winner) 
     payout = (,) amount (nameOf loser, nameOf winner)
-    updated =
-        update (nameOf loser)  (valueOf loser  + amount) .
-        update (nameOf winner) (valueOf winner - amount) $ players
+    players' =
+        update winner (subtract amount) .
+        update loser (+ amount) $ players
 
-update :: String -> Int -> [Player] -> [Player]
-update name new = (if new == 0 then id else ((new,name):)) . filter ((name/=) . nameOf)
+update :: Player -> (Int -> Int) -> [Player] -> [Player]
+update player adjust = (if adjusted == 0 then id else reinsert player) . delete player
+    where
+    adjusted = adjust . valueOf $ player
+    reinsert player = (:) (adjusted, nameOf player)
