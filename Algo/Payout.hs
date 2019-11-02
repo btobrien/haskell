@@ -4,9 +4,9 @@ import Data.List
 type Player = (Int, String); valueOf = fst; nameOf = snd; 
 type Payout = (Int, (String, String))
 
-main = getContents >>= putStrLn . either showError showPayouts . calculatePayouts . readPlayer
+main = getContents >>= putStrLn . either showError showPayouts . calculatePayouts . readPlayers
     where
-    readPlayer = map ((\(name:val:_) -> (read val, name)) . words) . lines
+    readPlayers = map ((\(name:val:_) -> (read val, name)) . words) . lines
     showPayouts = unlines . map (\(val, (from, to)) -> from ++ " -> " ++ to ++ ": " ++ show val)
     showError = ("ERROR: results add to "++) . show 
     
