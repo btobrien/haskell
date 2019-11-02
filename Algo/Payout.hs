@@ -26,4 +26,4 @@ selectPayout players = if null players then Nothing else Just (payout, updated)
         update (nameOf winner) (valueOf winner - amount) $ players
 
 update :: String -> Int -> [Player] -> [Player]
-update name new = filter ((0/=) . valueOf) . ((new,name):) . filter ((name/=) . nameOf)
+update name new = (if new == 0 then id else ((new,name):)) . filter ((name/=) . nameOf)
