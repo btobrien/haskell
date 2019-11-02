@@ -18,10 +18,10 @@ calculatePayouts results = if net /= 0 then (Left net) else Right (unfoldr selec
     (losers,winners) = partition ((<0) . valueOf) results
 
 selectPayout :: ([Result], [Result]) -> Maybe (Payout, ([Result],[Result]))
-selectPayout (losers,winners) = if null winners || null losers then Nothing else Just (payout, adjusted)
+selectPayout (losers,winners) = if null losers || null winners then Nothing else Just (payout, adjusted)
     where
-    winner = maximum winners
     loser = minimum losers
+    winner = maximum winners
     amount = min (abs . valueOf $ loser) (valueOf winner) 
     payout = (amount, (nameOf loser, nameOf winner))
     adjusted = (,) 
