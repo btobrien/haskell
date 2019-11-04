@@ -14,8 +14,8 @@ scaleBack :: Int -> Double
 scaleBack = (/granularity) . fromIntegral
 
 data Player = Player { result :: Int, name :: String } deriving (Eq, Ord)
-instance Read Player where
-    readsPrec _ = (\x->[(x,"")]) . (Player <$> scale.read.head.tail <*> head) . words
+instance Read Player where readsPrec _ = (\x->[(x,"")]) . read where
+    read = (Player <$> scale.read.head.tail <*> head) . words
 instance Show Player where show = name <+" "+> show.scaleBack.result
 
 readPlayers :: String -> [Player]
@@ -33,7 +33,7 @@ printWith shower = mapM_ $ putStrLn . shower
 on :: (a -> a -> b) -> (c -> a) -> c -> c -> b
 on process view x y = process (view x) (view y)
 
--- argmap funky but cool
+-- argmap funky but kinda cool
 
 test = o.o.o $
     (,,,) |----> isLower <---> isSpace <---> isUpper <-> (=='x') 
