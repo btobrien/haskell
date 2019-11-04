@@ -1,32 +1,35 @@
+
 import Data.Either
 import Data.List
+import Control.Monad
+import System.Exit
+import Data.Char
 
-type Player = (Int, String); valueOf = fst; nameOf = snd
-type Payout = (Int, (String, String))
+import Player
 
-main = getContents >>= putStrLn . either showError showPayouts . calculatePayouts . readPlayers
-    where
-    readPlayers = map ((\(name:val:_) -> (read val, name)) . words) . lines
-    showPayouts = unlines . map (\(val, (from, to)) -> from ++ " -> " ++ to ++ ": " ++ show val)
-    showError = ("ERROR: results add to "++) . show 
-    
+main = either printError printAll . calculatePayouts . readPlayers =<< getContents
+    where printError = die . ("ERROR: results add to "++> show)
+
+data Payout = Payout { payout :: Int, sender :: String, receiver :: String } deriving (Eq, Ord)
+instance Show Payout where show = sender <+" -> "+> receiver <+": "+> show.scaleBack.payout
+
 calculatePayouts :: [Player] -> Either Int [Payout] 
 calculatePayouts players = if net /= 0 then Left net else Right (unfoldr selectPayout players)
-    where net = sum . map valueOf $ players
+    where net = sum . map result $ players
 
 selectPayout :: [Player] -> Maybe (Payout, [Player])
-selectPayout players = if null players then Nothing else Just (payout, players')
+selectPayout players = if null players then Nothing else Just (loser `pays` winner, balance players)
     where
-    loser = minimum players
     winner = maximum players
-    amount = min (abs . valueOf $ loser) (valueOf winner) 
-    payout = (,) amount (nameOf loser, nameOf winner)
-    players' =
-        update winner (subtract amount) .
-        update loser (+ amount) $ players
+    loser = minimum players
+    amount = min (abs.result $ loser) (result winner) 
+    pays = Payout amount `on` name
+    balance =
+        from winner (subtract amount) .
+        from loser  (+ amount)
 
-update :: Player -> (Int -> Int) -> [Player] -> [Player]
-update player adjust = (if adjusted == 0 then id else reinsert player) . delete player
+from :: Player -> (Int -> Int) -> [Player] -> [Player]
+from player adjust = (if adjusted == 0 then id else reinsert player) . delete player
     where
-    adjusted = adjust . valueOf $ player
-    reinsert player = (:) (adjusted, nameOf player)
+    adjusted = adjust . result $ player
+    reinsert = (:) . Player adjusted . name 
