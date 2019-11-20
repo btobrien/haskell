@@ -24,6 +24,7 @@ function edit_results
 
 function set_addresses
 {
+    addresses=''
     unrecognized=true
     while $unrecognized; do
         unrecognized=false
