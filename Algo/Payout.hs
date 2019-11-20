@@ -4,11 +4,14 @@ import Data.List
 import Control.Monad
 import System.Exit
 import Data.Char
+import System.IO
 
 import Player
 
+die x = hPutStrLn stderr x >> exitWith (ExitFailure 1)
+
 main = either printError printAll . calculatePayouts . readPlayers =<< getContents
-    where printError = die . ("ERROR: results add to "++> show)
+    where printError = (die.) $ "ERROR: results add to "++> show.scaleBack
 
 data Payout = Payout { payout :: Int, sender :: String, receiver :: String } deriving (Eq, Ord)
 instance Show Payout where show = sender <+" -> "+> receiver <+": "+> show.scaleBack.payout
