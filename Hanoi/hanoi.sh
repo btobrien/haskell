@@ -1,12 +1,9 @@
 #!/bin/bash
 
-set -o pipefail
-
 config=$HOME/.config/hanoi
-
-size=${1:-5}
 mkdir -p $config/scores/
 
+size=${1:-5}
 player=$2
 
 isbot=false
@@ -19,7 +16,7 @@ if [ "$player" == '' ]; then
     exit 1
 fi
 
-/usr/bin/time -f'%e' playnoi $size 2>$config/last
+/usr/bin/time -f'%e' toi $size 2>$config/last
 
 [ "$?" == 0 ] || exit 1
 

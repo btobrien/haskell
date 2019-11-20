@@ -4,10 +4,9 @@ module Hanoi where
 import Data.Maybe
 import Control.Applicative
 
-type Move = (Int,Int)
 type Disk = Int
-type Stack = [Disk]
-data Board = Board { left :: Stack, center :: Stack, right :: Stack } deriving (Eq, Show, Read)
+data Board = Board { left :: [Disk], center :: [Disk], right :: [Disk] }
+    deriving (Eq, Show, Read)
 
 start :: Int -> Board
 start n = Board [1..n] [] []
@@ -15,7 +14,7 @@ start n = Board [1..n] [] []
 won :: Board -> Bool
 won = (&&) <$> null.left <*> null.center
 
-update :: Int -> (Stack -> Stack) -> Board -> Maybe Board
+update :: Int -> ([Disk] -> [Disk]) -> Board -> Maybe Board
 update 0 modify board = Just $ board { left = modify (left board) }
 update 1 modify board = Just $ board { center = modify (center board) }
 update 2 modify board = Just $ board { right = modify (right board) }
@@ -39,4 +38,4 @@ pop :: Int -> Board -> Maybe (Disk,Board)
 pop index board = (,) <$> top index board <*> update index (drop 1) board
 
 move :: (Int,Int) -> Board -> Board
-move (from,to) board = fromMaybe board (pop from board >>= uncurry (push to))
+move (from,to) board = fromMaybe board $ pop from board >>= uncurry (push to)

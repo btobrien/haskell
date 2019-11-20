@@ -18,6 +18,8 @@ main = do
     mapM_ print boards
     when (not.won.last $ boards) (exitWith.ExitFailure $ 1)
 
+type Move = (Int,Int)
+
 parsemoves :: String -> [Move]
 parsemoves =
     map ((,) <$> head <*> head.tail) .  chunksOf 2 .

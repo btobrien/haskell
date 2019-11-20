@@ -1,11 +1,11 @@
 
-all : hanoi playnoi textnoi shownoi coat clean
+all : hanoi toi textnoi shownoi coat clean
 
 hanoi:
 	cp hanoi.sh ~/bin/hanoi
 
-playnoi:
-	cp playnoi.sh ~/bin/playnoi
+toi:
+	cp toi.sh ~/bin/toi
 
 textnoi:
 	ghc -o ~/bin/textnoi textnoi.hs
