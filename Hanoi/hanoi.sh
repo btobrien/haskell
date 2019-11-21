@@ -16,13 +16,13 @@ if [ "$player" == '' ]; then
     exit 1
 fi
 
-/usr/bin/time -f'%e' toi $size 2>$config/last
+/usr/bin/time toi $size 2>$config/last 
 
-[ "$?" == 0 ] || exit 1
+[ "$?" == 0 ] || exit 4
 
 echo
-cat $config/last
-
+score=$(awk '{ print $1 }' <$config/last)
+echo $score
 echo
 
 if $isbot; then
@@ -30,7 +30,7 @@ if $isbot; then
     echo "too bad you're a bot"
     echo
 else
-    echo "$(cat $config/last) $player" >>$config/scores/$size
+    echo "$score $player" >>$config/scores/$size
 fi
 
 echo 'leader board'
