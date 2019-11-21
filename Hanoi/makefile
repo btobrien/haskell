@@ -1,11 +1,11 @@
 
 all : hanoi toi textnoi shownoi coat clean
 
-hanoi:
-	cp hanoi.sh ~/bin/hanoi
-
 centos : all 
 	cp hanoi_centos.sh ~/bin/hanoi
+
+hanoi:
+	cp hanoi.sh ~/bin/hanoi
 
 toi:
 	cp toi.sh ~/bin/toi
