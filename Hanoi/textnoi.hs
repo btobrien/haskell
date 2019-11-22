@@ -5,7 +5,7 @@ import System.Environment
 import Control.Applicative
 import System.Exit
 import Control.Monad
-import Data.List.Split
+import Data.List
 
 import Hanoi
 
@@ -31,4 +31,7 @@ scanMoves = scanl (flip move)
 
 takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
+
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf n = unfoldr (\xs -> if null xs then Nothing else Just (take n xs, drop n xs))
 
