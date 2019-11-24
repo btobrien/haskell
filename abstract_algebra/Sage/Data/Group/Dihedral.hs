@@ -43,7 +43,7 @@ instance Group Dihedral where
         then d
         else reflect <> d <> reflect
 
-rotateOn n = Di (False, 1 <+> base n)
+rotateOn n = Di (False, 1 <> base n)
 reflect = Di (True, e)
 
 dihedral :: Int -> [Dihedral]
@@ -51,9 +51,9 @@ dihedral n = genFrom [rotateOn n, reflect]
 
 d x = Di (False, base x)
 
-r :: Integer -> Dihedral -> Dihedral
-r n x = Di (False, n <+> e) .> x
+r :: Modulo -> Dihedral -> Dihedral
+r n x = Di (False, n <> e) <> x
 
 s :: Dihedral -> Dihedral
-s x = Di (True, e) .> x
+s x = Di (True, e) <> x
 

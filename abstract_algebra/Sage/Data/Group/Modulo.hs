@@ -43,7 +43,3 @@ instance Group Modulo where inv = negate
 modulo :: Int -> [Modulo]
 modulo n = map (M n) [0..(n-1)]
 
-(<+>) :: Integer -> Modulo -> Modulo; infixr 6 <+>
-(<+>) = (<>) `over` (fromIntegral, id)
-
-
