@@ -6,6 +6,7 @@ import Data.List
 import Control.Applicative
 import Data.Group
 import Utils
+import Data.Monoid
 
 data Modulo = M { baseof :: Int, valueof :: Int }
 
