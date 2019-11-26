@@ -3,15 +3,9 @@ module Data.Group.Dihedral where
 
 import Utils
 import Data.Group
+import Data.Semigroup
+import Data.Monoid hiding ((<>))
 import Data.Group.Modulo
-
-instance Semigroup Bool
-    where 
-    True <> True = False
-    False <> False = False
-    _ <> _ = True
-instance Monoid Bool where mempty = False 
-instance Group Bool where inv = id 
 
 newtype Dihedral = Di (Bool,Modulo); val (Di x) = x
 
@@ -37,23 +31,19 @@ instance Semigroup Dihedral where
 
 instance Monoid Dihedral where
     mempty = Di mempty
+    mappend = (<>)
 
 instance Group Dihedral where
-    inv d = if reflected d
-        then d
-        else reflect <> d <> reflect
+    inv g = if reflected g
+        then g
+        else s<>g<>s
 
-rotateOn n = Di (False, 1 <> base n)
-reflect = Di (True, e)
+d :: Int -> Dihedral -> Dihedral
+d n x = Di (False, base n 0) <> x
+
+r n = Di (False, n)
+s = Di (True, e)
 
 dihedral :: Int -> [Dihedral]
-dihedral n = genFrom [rotateOn n, reflect]
-
-d x = Di (False, base x)
-
-r :: Modulo -> Dihedral -> Dihedral
-r n x = Di (False, n <> e) <> x
-
-s :: Dihedral -> Dihedral
-s x = Di (True, e) <> x
+dihedral n = genFrom [d n (r 1), s]
 

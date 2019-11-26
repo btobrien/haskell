@@ -3,6 +3,8 @@ module Data.Group.NonGroup where
 
 import Utils
 import Data.Group
+import Data.Semigroup
+import Data.Monoid hiding ((<>))
 
 data NonGroup = NG { ng :: Int }
 instance Show NonGroup where show (NG n) = show n
@@ -18,10 +20,12 @@ instance Semigroup NonGroup where
     (NG 2) <> (NG 0) = NG 2
     (NG 2) <> (NG 1) = NG 1
     (NG 2) <> (NG 2) = NG 2
-instance Monoid NonGroup where mempty = NG 0
+instance Monoid NonGroup where
+	mempty = NG 0
+	mappend = (<>)
 instance Group NonGroup where
     inv (NG 0) = NG 0
     inv (NG 1) = NG 2
     inv (NG 2) = NG 1
 
-nonGroup = [NG 0, NG 1, NG 2]
+nonGroup = map NG [0..2]

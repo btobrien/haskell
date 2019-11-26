@@ -6,13 +6,14 @@ import Data.List
 import Control.Applicative
 import Control.Monad
 import Utils
-import qualified Data.Set as S
+
+import qualified Data.Map as Map
+import Data.Map (Map)
 
 infixl 6 .>
 (.>) :: Monoid a => a -> a -> a
 (.>) = flip (<>)
 
--- note: sets will be more efficient
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
     e :: a
@@ -53,14 +54,17 @@ isGroup = not.null
     <&&> invertible 
     <&&> closed
 
+cayleyTable :: Group a => [a] -> [[a]]
+cayleyTable xs = (<$>xs) . (<>) <$> xs
+	
 close :: Group a => [a] -> [a]
 close = until closed products 
 
 genFrom :: Group a => [a] -> [a]
-genFrom xs = close . nub . (e:) $ xs ++ map inv xs
+genFrom xs = close . nub $ xs ++ map inv xs
 
 isGenOf :: Group a => [a] -> a -> Bool
-isGenOf xs x = xs =~= gen x
+isGenOf xs x = length xs == length (gen x)
 
 generators :: Group a => [a] -> [a]
 generators = filter <$> isGenOf <*> id
@@ -77,8 +81,8 @@ commutes xs x = all (commute x) xs
 commuters :: Group a => [a] -> [a]
 commuters = filter <$> commutes <*> id
 
-autoinvs :: Group a => [a] -> [a]
-autoinvs = filter (inverses <$> id <*> id)
+selfInvs :: Group a => [a] -> [a]
+selfInvs = filter (inverses <$> id <*> id)
 
 isAbelian :: Group a => [a] -> Bool
 isAbelian = all (uncurry commute) . pairs
@@ -105,7 +109,6 @@ subgroups xs = let n = length xs in
     [ (e:g) | d <- dividers n
     , g <- chooseFrom (delete e xs) (d-1)
     , isSubgroup (e:g) ]
-
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)

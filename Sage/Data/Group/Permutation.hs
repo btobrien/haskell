@@ -6,11 +6,12 @@ import Control.Applicative
 import Prelude hiding (cycle)
 
 import Utils
+import Data.Semigroup
+import Data.Monoid hiding ((<>))
 import Data.Group
 import Data.Group.Modulo
 
 type Cycle a = [a]
--- inverse is reverse
 
 showcycle :: Show a => Cycle a -> String
 showcycle cycle = '(' : (concat . map show $ cycle) ++ ")"
@@ -19,9 +20,9 @@ through :: Eq a => [Cycle a] -> a -> a
 through = flip (foldr rotate)
     where
     rotate cycle x = if null rotated then x else head rotated
-        where rotated = drop 1 . dropWhile (/=x) . ((++) <$> id <*> take 1) $ cycle
+        where
+		rotated = drop 1 . dropWhile (/=x) . ((++) <$> id <*> take 1) $ cycle
 
--- unique letters
 permute :: Ord a => [a] -> a -> a
 permute xs x = (xs!!) . length . takeWhile (<x) . sort $ xs
 
@@ -30,7 +31,6 @@ recycle f = filter ((>1).length) . unfold popcycle . sort . nub
     where
     popcycle (x:xs) = let cycle = generate f x in (cycle, xs \\ cycle)
 
--- reduction invariant
 newtype Permutation a = P [Cycle a]; cycles (P cs) = cs
 
 reduce :: Ord a => [Cycle a] -> Permutation a
@@ -54,6 +54,7 @@ instance Ord a => Semigroup (Permutation a) where
     (<>) = reduce .: (++) `on` cycles
 instance Ord a => Monoid (Permutation a) where
     mempty = P []
+    mappend = (<>)
 instance Ord a => Group (Permutation a) where
     inv = reduce . reverse . map reverse . cycles
 
@@ -65,10 +66,6 @@ elements = sort . nub . concat . cycles
 
 mapping :: Ord a => Permutation a -> [(a,a)]
 mapping = map <$> also.apply <*> elements
-
-infixr 6 <:
-(<:) :: Ord a => Cycle a -> Permutation a -> Permutation a
-c <: p = reduce [c] <> p
 
 symmetric :: Int -> [Permutation Int]
 symmetric n = Data.Group.Permutation.permutations [1..n]
@@ -85,7 +82,7 @@ alternating = filter Data.Group.Permutation.even . symmetric
 --generalize Int to Enum
 
 rotate :: Int -> Permutation Int
-rotate n = [1..n] <:e
+rotate n = P [[1..n]]
 
 reflect :: Int -> Permutation Int
 reflect n = reduce
