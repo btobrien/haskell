@@ -18,7 +18,10 @@ xcompose (a,b) (c,d) = if c
     else (a, b<>d)
 
 instance Show Dihedral where
-    show = show.val
+    show x | x == e = "e"
+    show x | snd (val x) == 0 = "s"
+    show x |reflected x = 's':'r':(show.inv.snd.val $ x)
+    show x  = 'r':(show.snd.val $ x)
 
 instance Eq Dihedral where
     (==) = (==) `on` val
