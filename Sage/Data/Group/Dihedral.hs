@@ -36,14 +36,12 @@ instance Monoid Dihedral where
 instance Group Dihedral where
     inv g = if reflected g
         then g
-        else s<>g<>s
+        else reflect <> g <> reflect
 
-d :: Int -> Dihedral -> Dihedral
-d n x = Di (False, base n 0) <> x
-
-r n = Di (False, n)
-s = Di (True, e)
+rotate n = Di (False, n)
+reflect = Di (True, e)
+dihbase n = (<>) (Di (False, base n 0))
 
 dihedral :: Int -> [Dihedral]
-dihedral n = genFrom [d n (r 1), s]
+dihedral n = gen [dihbase n (rotate 1), dihbase n reflect]
 

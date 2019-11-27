@@ -2,7 +2,8 @@
 module Data.Group where
 
 import Data.Monoid
-import Data.List
+import Data.List hiding (cycle)
+import Prelude hiding (cycle)
 import Control.Applicative
 import Control.Monad
 import Utils
@@ -60,17 +61,23 @@ cayleyTable xs = (<$>xs) . (<>) <$> xs
 close :: Group a => [a] -> [a]
 close = until closed products 
 
-genFrom :: Group a => [a] -> [a]
-genFrom xs = close . nub $ xs ++ map inv xs
+gen :: Group a => [a] -> [a]
+gen xs = close . nub . (e:) $ xs ++ map inv xs
 
-isGenOf :: Group a => [a] -> a -> Bool
-isGenOf xs x = length xs == length (gen x)
+cycle :: Group a => a -> [a] 
+cycle g = generate (g<>) e 
+
+order :: Group a => a -> Int 
+order = length . cycle
+
+generates :: Group a => [a] -> a -> Bool
+generates xs x = length xs == length (cycle x)
 
 generators :: Group a => [a] -> [a]
-generators = filter <$> isGenOf <*> id
+generators = filter <$> generates <*> id
 
 isCyclic :: Group a => [a] -> Bool
-isCyclic = any <$> isGenOf <*> id
+isCyclic = any <$> generates <*> id
 
 commute :: Group a => a -> a -> Bool
 commute x y = x <> y == y <> x
@@ -86,12 +93,6 @@ selfInvs = filter (inverses <$> id <*> id)
 
 isAbelian :: Group a => [a] -> Bool
 isAbelian = all (uncurry commute) . pairs
-
-gen :: Group a => a -> [a] 
-gen g = generate (g<>) e 
-
-order :: Group a => a -> Int 
-order = length . gen
 
 backProduct :: Group a => [a] -> [a]
 backProduct = map (\(x,y) -> x <> inv y) . pairs

@@ -91,5 +91,5 @@ reflect n = reduce
     $ modulo n
 
 dihedral :: Int -> [Permutation Int]
-dihedral n = genFrom [rotate n, reflect n]
+dihedral n = gen [rotate n, reflect n]
 

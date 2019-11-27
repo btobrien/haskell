@@ -1,5 +1,4 @@
 
-import Prelude hiding ((.))
 import Data.Semigroup
 import Utils
 import Data.Semigroup
@@ -13,23 +12,30 @@ import Control.Applicative
 --import Data.Group.Table
 --
 
-(.) :: Semigroup a => a -> a -> a
-(.) = (<>)
-
-(.:) :: Semigroup a => a -> a -> a
-(.:) = flip (<>)
+(.>) :: Semigroup a => a -> a -> a
+(.>) = flip (<>)
 
 (<:) :: Ord a => Cycle a -> Permutation a -> Permutation a
 c <: p = reduce [c] <> p
 
-(|:) :: Show a => String -> a -> IO ()
-name |: x = putStr (take 13 (name ++ repeat ' ')) >> print x
+r n = flip (<>) (D.rotate n)
+s = flip (<>) D.reflect 
+dih n f =  f . dihbase n $ e
+
+infixr 0 |. 
+(|.) = ($)
+
+--
+infixr 0 ||| 
+name ||| x = putStr (take 13 (name ++ repeat ' ')) >> print x
 
 main = test 5
+
+test :: Int -> IO ()
 test n = do
-	"bool"         |: [isGroup [True,False]]
-	"modulos"      |: [isGroup (modulo n)     | n <- [2..n]]
-	"D.dihedrals"  |: [isGroup (D.dihedral n)  | n <- [2..n]]
-	"S.dihedrals"  |: [isGroup (S.dihedral n)  | n <- [2..n]]
-	"alternatings" |: [isGroup (alternating n) | n <- [2..n]]
-	"symmetrics"   |: [isGroup (symmetric n)   | n <- [2..n]]
+	"bool"         |||  isGroup <$> [[True,False]]
+	"modulos"      |||  isGroup . modulo <$> [2..n]
+	"D.dihedrals"  |||  isGroup . D.dihedral <$> [2..n]
+	"S.dihedrals"  |||  isGroup . S.dihedral <$> [2..n]
+	"alternatings" |||  isGroup . alternating <$> [2..n]
+	"symmetrics"   |||  isGroup . symmetric <$> [2..n]
