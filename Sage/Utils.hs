@@ -19,12 +19,16 @@ on process view x y = process (view x) (view y)
 over process (viewx,viewy) x y = process (viewx x) (viewy y)
 neighbors = zip <$> id <*> tail
 (.:) f g x y = f (g x y) 
-p <&&> p' = (&&) <$> p <*> p'; infixl 8 <&&>
-p <||> p' = (||) <$> p <*> p'; infixl 8 <||>
-p <++> p' = (++) <$> p <*> p'; infixl 8 <++>
+p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>
+p <||> p' = (||) <$> p <*> p'; infixl 1 <||>
+p <++> p' = (++) <$> p <*> p'; infixl 1 <++>
 p <==> p' = (==) <$> p <*> p'
-p +> p' = (++) <$> p <*> p'; infixl 8 +>
-p <+ p' = (++) <$> p <*> const p'; infixl 8 <+
+p +> p' = (++) <$> p <*> p'; infixl 1 +>
+p <+ p' = (++) <$> p <*> const p'; infixl 1 <+
+p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
+p |> p' = (++) <$> p <*> show.p'; infixl 1 |>
+p <| p' = (++) <$> p <*> const p'; infixl 1 <|
+p ||> p' = (++) <$> const p <*> show.p'; infixl 1 ||>
 
 (=~=) :: Ord a => [a] -> [a] -> Bool
 (=~=) = (==) `on` S.fromList

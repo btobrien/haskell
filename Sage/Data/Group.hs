@@ -3,7 +3,7 @@ module Data.Group where
 
 import Data.Monoid
 import Data.List hiding (cycle)
-import Prelude hiding (cycle)
+import Prelude hiding (cycle, (^))
 import Control.Applicative
 import Control.Monad
 import Utils
@@ -19,6 +19,13 @@ class (Monoid a, Ord a) => Group a where
     inv :: a -> a
     e :: a
     e = mempty
+
+infixr 9 ^
+g ^ 0 = e
+g ^ 1 = g
+g ^ n | n < 0 = inv g ^ abs n
+g ^ n = (g <> g) ^ (n - 1)
+ -- could use binary evaluation here..
 
 identity :: Group a => a -> Bool
 identity = (==e)
@@ -57,7 +64,7 @@ isGroup = not.null
 
 cayleyTable :: Group a => [a] -> [[a]]
 cayleyTable xs = (<$>xs) . (<>) <$> xs
-	
+    
 close :: Group a => [a] -> [a]
 close = until closed products 
 

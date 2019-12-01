@@ -6,6 +6,7 @@ import Data.Group
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
 import Data.Group.Modulo
+import Data.Group.Permutation
 
 newtype Dihedral = Di (Bool,Modulo); val (Di x) = x
 
@@ -43,8 +44,20 @@ instance Group Dihedral where
 
 rotate n = Di (False, n)
 reflect = Di (True, e)
-dihbase n = (<>) (Di (False, base n 0))
+dih n = (<>) (Di (False, base n 0))
 
 dihedral :: Int -> [Dihedral]
-dihedral n = gen [dihbase n (rotate 1), dihbase n reflect]
+dihedral n = gen [dih n (rotate 1), dih n reflect]
+
+rotateOn :: Int -> Permutation Int
+rotateOn n = P [[1..n]]
+
+reflectOn :: Int -> Permutation Int
+reflectOn n = reduce
+    . map (\x -> [evaluate x, (evaluate.inv) x])
+    . take (n`div`2) . tail
+    $ modulo n
+
+dihedralOn :: Int -> [Permutation Int]
+dihedralOn n = gen [rotateOn n, reflectOn n]
 

@@ -9,7 +9,6 @@ import Utils
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
 import Data.Group
-import Data.Group.Modulo
 
 type Cycle a = [a]
 
@@ -79,17 +78,5 @@ even = Prelude.even . sum . map (length.tail) . cycles
 alternating :: Int -> [Permutation Int]
 alternating = filter Data.Group.Permutation.even . symmetric
 
---generalize Int to Enum
-
-rotate :: Int -> Permutation Int
-rotate n = P [[1..n]]
-
-reflect :: Int -> Permutation Int
-reflect n = reduce
-    . map (\x -> [evaluate x, (evaluate.inv) x])
-    . take (n`div`2) . tail
-    $ modulo n
-
-dihedral :: Int -> [Permutation Int]
-dihedral n = gen [rotate n, reflect n]
+--generalize Int to Enum?
 

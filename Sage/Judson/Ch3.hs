@@ -1,4 +1,5 @@
 
+import Prelude hiding ((^))
 import Utils
 import Sage
 import Data.Semigroup
@@ -13,19 +14,32 @@ import Control.Applicative
 --import Data.Group.Table
 
 
--- TODO: support CayleyTable group implementation
+-- TODO: support CayleyTable group implementation?
 a2 = undefined
 
-q3 =
-    "Write out Cayley tables for the groups formed by " ++
-    "Z4 and D4. Are the they the same?"
 a3 = do
     print "Z4"
     dumps $ cayleyTable (modulo 4)
     print "D4"
     dumps $ cayleyTable (D.dihedral 4)
 
-q15 =
-    "Prove or disprove that every group containing " ++
-    "6 elements is abelian"
-a15 = isAbelian (D.dihedral 3)
+a15 = do
+    print.length $ symmetric 3
+    print.isAbelian $ symmetric 3
+
+a16 =
+    dih 3 (s<>r)^2
+    ==
+    dih 3 s^2<>r^2
+
+a17 = do
+    print.size $ modulo 8
+    print.size $ dihedral 4
+    print.size $ (,,) <$>
+            modulo 2 <*>
+            modulo 2 <*>
+            modulo 2
+    where
+    size xs = (length xs, length (subgroups xs))
+
+a26 = undefined

@@ -16,8 +16,8 @@ instance Semigroup Bool
     False <> False = False
     _ <> _ = True
 instance Monoid Bool where
-	mempty = False 
-	mappend = (<>)
+    mempty = False 
+    mappend = (<>)
 instance Group Bool where inv = id 
 
 data Modulo = M { baseof :: Maybe Int, valueof :: Int }
@@ -31,9 +31,9 @@ modify f x = x { valueof = f.valueof $ x }
 compose :: (Int -> Int -> Int) -> Modulo -> Modulo -> Modulo
 compose f x y = M (checkbase x y) (valueof x `f` valueof y)
     where
-	checkbase a b = if (baseof a <==> baseof b) == (Just False)
-		then undefined
-		else baseof a <|> baseof b
+    checkbase a b = if (baseof a <==> baseof b) == (Just False)
+        then undefined
+        else baseof a <|> baseof b
 
 instance Show Modulo where
     show = show.evaluate
@@ -51,8 +51,8 @@ instance Num Modulo where
     signum = undefined
 instance Semigroup Modulo  where (<>) = (+)
 instance Monoid Modulo where
-	mempty = fromInteger 0
-	mappend = (<>)
+    mempty = fromInteger 0
+    mappend = (<>)
 instance Group Modulo where inv = negate
 
 modulo :: Int -> [Modulo]
