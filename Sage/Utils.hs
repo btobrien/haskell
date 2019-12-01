@@ -11,6 +11,7 @@ generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
 
 powerset = filterM (const [True,False])
 pairs xs = (,) <$> xs <*> xs
+thruples xs = (,,) <$> xs <*> xs <*> xs
 also f x = (x, f x)
 ifhead :: ([a] -> b) -> [a] -> Maybe b
 ifhead f xs = if null xs then Nothing else Just (f xs)
@@ -26,9 +27,9 @@ p <==> p' = (==) <$> p <*> p'
 p +> p' = (++) <$> p <*> p'; infixl 1 +>
 p <+ p' = (++) <$> p <*> const p'; infixl 1 <+
 p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
-p |> p' = (++) <$> p <*> show.p'; infixl 1 |>
-p <| p' = (++) <$> p <*> const p'; infixl 1 <|
-p ||> p' = (++) <$> const p <*> show.p'; infixl 1 ||>
+--p |> p' = (++) <$> p <*> show.p'; infixl 1 |>
+--p <| p' = (++) <$> p <*> const p'; infixl 1 <|
+--p ||> p' = (++) <$> const p <*> show.p'; infixl 1 ||>
 
 (=~=) :: Ord a => [a] -> [a] -> Bool
 (=~=) = (==) `on` S.fromList
@@ -45,6 +46,17 @@ dump = mapM_ print
 dumps :: Show a => [[a]] -> IO ()
 dumps xss = putStr . unlines . map (intercalate " ") . (map.map) (pad wid . show)$ xss
     where wid = maximum . map (length.show) . concat $ xss
+
+dumpx :: Show a => [[a]] -> IO ()
+dumpx xss = putStr . unlines . addlines . map (intercalate " | ") . (map.map) (pad wid . show)$ xss
+    where
+    wid = maximum . map (length.show) . concat $ xss
+    addlines ss = let n = length (head ss) in intersperse (replicate n '-') ss
+
+
+___ = putStrLn 
+__ = putStrLn ""
+____ = putStr
 
 pad n xs = take n $ xs ++ repeat ' ' 
 

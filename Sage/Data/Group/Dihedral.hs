@@ -13,16 +13,26 @@ newtype Dihedral = Di (Bool,Modulo); val (Di x) = x
 reflected :: Dihedral -> Bool
 reflected = fst.val
 
+degree :: Dihedral -> Modulo
+degree = snd.val
+
 xcompose :: (Bool,Modulo) -> (Bool,Modulo) -> (Bool,Modulo)
 xcompose (a,b) (c,d) = if c
     then (a<>c, inv b <> d) 
     else (a, b<>d)
 
 instance Show Dihedral where
-    show x | x == e = "e"
-    show x | snd (val x) == 0 = "s"
-    show x |reflected x = 's':'r':(show.inv.snd.val $ x)
-    show x  = 'r':(show.snd.val $ x)
+    show x | identity x = "e"
+    show x = shows (reflected x) ++ showr (degree x)
+        where
+        shows s = if s
+            then "s"
+            else ""
+        showr r = if r==0
+            then ""
+            else if r==1
+                then "r"
+                else 'r': show r
 
 instance Eq Dihedral where
     (==) = (==) `on` val

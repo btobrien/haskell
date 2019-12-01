@@ -20,7 +20,7 @@ through = flip (foldr rotate)
     where
     rotate cycle x = if null rotated then x else head rotated
         where
-		rotated = drop 1 . dropWhile (/=x) . ((++) <$> id <*> take 1) $ cycle
+        rotated = drop 1 . dropWhile (/=x) . ((++) <$> id <*> take 1) $ cycle
 
 permute :: Ord a => [a] -> a -> a
 permute xs x = (xs!!) . length . takeWhile (<x) . sort $ xs

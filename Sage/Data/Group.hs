@@ -11,10 +11,6 @@ import Utils
 import qualified Data.Map as Map
 import Data.Map (Map)
 
-infixl 6 .>
-(.>) :: Monoid a => a -> a -> a
-(.>) = flip (<>)
-
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
     e :: a
@@ -29,6 +25,9 @@ g ^ n = (g <> g) ^ (n - 1)
 
 identity :: Group a => a -> Bool
 identity = (==e)
+
+selfinv :: Group a => a -> Bool
+selfinv = inverses <$> id <*> id
 
 preserving :: Group a => [a] -> Bool
 preserving xs = 
@@ -92,11 +91,8 @@ commute x y = x <> y == y <> x
 commutes :: Group a => [a] -> a -> Bool
 commutes xs x = all (commute x) xs
 
-commuters :: Group a => [a] -> [a]
-commuters = filter <$> commutes <*> id
-
-selfInvs :: Group a => [a] -> [a]
-selfInvs = filter (inverses <$> id <*> id)
+center :: Group a => [a] -> [a]
+center = filter <$> commutes <*> id
 
 isAbelian :: Group a => [a] -> Bool
 isAbelian = all (uncurry commute) . pairs

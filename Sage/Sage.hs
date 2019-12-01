@@ -14,8 +14,8 @@ import Data.Group.NonGroup
 import Control.Applicative
 --import Data.Group.Table
 
-(.>) :: Semigroup a => a -> a -> a
-(.>) = flip (<>)
+(...) :: Semigroup a => a -> a -> a
+(...) = flip (<>)
 
 (<:) :: Ord a => Cycle a -> Permutation a -> Permutation a
 c <: p = reduce [c] <> p
