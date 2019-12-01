@@ -1,4 +1,6 @@
 
+module Sage where
+
 import Data.Semigroup
 import Utils
 import Data.Semigroup
@@ -10,7 +12,6 @@ import Data.Group.Dihedral as D
 import Data.Group.NonGroup
 import Control.Applicative
 --import Data.Group.Table
---
 
 (.>) :: Semigroup a => a -> a -> a
 (.>) = flip (<>)
@@ -28,8 +29,6 @@ infixr 0 |.
 --
 infixr 0 ||| 
 name ||| x = putStr (take 13 (name ++ repeat ' ')) >> print x
-
-main = test 5
 
 test :: Int -> IO ()
 test n = do

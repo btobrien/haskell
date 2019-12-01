@@ -39,7 +39,10 @@ dump :: Show a => [a] -> IO ()
 dump = mapM_ print
 
 dumps :: Show a => [[a]] -> IO ()
-dumps = putStr . unlines . map (intercalate " ") . (map.map) show
+dumps xss = putStr . unlines . map (intercalate " ") . (map.map) (pad wid . show)$ xss
+    where wid = maximum . map (length.show) . concat $ xss
+
+pad n xs = take n $ xs ++ repeat ' ' 
 
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
 groupOn = groupBy.((==)`on`)
