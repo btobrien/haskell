@@ -57,7 +57,7 @@ instance Monoid Unit where
     mempty = fromInteger 1
     mappend = (<>)
 instance Group Unit where
-    inv x = fromMaybe undefined $ do
+    inv x = fromMaybe e $ do
         n <- baseof (val x)
         let x' = fst $ euclidean (evaluate (val x)) n
         return . U . base n . fromInteger . toInteger $ x'

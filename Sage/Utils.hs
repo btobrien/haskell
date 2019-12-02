@@ -9,6 +9,7 @@ import qualified Data.Set as S
 generate :: Eq a => (a -> a) -> a -> [a]
 generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
 
+mapp = map . uncurry
 powerset = filterM (const [True,False])
 pairs xs = (,) <$> xs <*> xs
 thruples xs = (,,) <$> xs <*> xs <*> xs
@@ -97,4 +98,8 @@ factor = unfoldr $ \n -> if n == 1 then Nothing else let d = smallestDivider n i
 
 isPrime :: Int -> Bool
 isPrime n = factor n == [n]
+
+check g assumption f = if assumption g
+        then Just (f g)
+        else Nothing
 

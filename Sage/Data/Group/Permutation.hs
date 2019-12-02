@@ -69,6 +69,9 @@ mapping = map <$> also.apply <*> elements
 symmetric :: Int -> [Permutation Int]
 symmetric n = Data.Group.Permutation.permutations [1..n]
 
+symmetric' n = let a = alternating n in
+    a ++ (symmetric n \\ a)
+
 transpositions :: Ord a => Permutation a -> [(a,a)]
 transpositions = concat . map neighbors . cycles
 

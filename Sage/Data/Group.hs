@@ -45,11 +45,14 @@ invertible xs =
     && 
     xs =~= map inv xs
 
-products :: Group a => [a] -> [a]
-products = nub . map (uncurry (<>)) . pairs
+products :: Group a => [a] -> [a] -> [a]
+products xs ys = nub [x <> y | x <- xs, y <- ys]
+
+closure :: Group a => [a] -> [a]
+closure = products <$> id <*> id
 
 closed :: Group a => [a] -> Bool
-closed xs = products xs =~= xs
+closed xs = closure xs =~= xs
 
 uniqueness :: Group a => [a] -> Bool
 uniqueness xs = length xs == length (nub xs)
@@ -65,10 +68,13 @@ cayleyTable :: Group a => [a] -> [[a]]
 cayleyTable xs = (<$>xs) . (<>) <$> xs
     
 close :: Group a => [a] -> [a]
-close = until closed products 
+close = until closed closure 
 
 gen :: Group a => [a] -> [a]
 gen xs = close . nub . (e:) $ xs ++ map inv xs
+
+hasOrderOf :: Int -> [a] -> Bool
+hasOrderOf n = (n==).length
 
 cycle :: Group a => a -> [a] 
 cycle g = generate (g<>) e 
@@ -100,19 +106,33 @@ isAbelian = all (uncurry commute) . pairs
 backProduct :: Group a => [a] -> [a]
 backProduct = map (\(x,y) -> x <> inv y) . pairs
 
+-- shortcircuits quicker than backproduct test
 isSubgroup :: Group a => [a] -> Bool
-isSubgroup xs = xs =~= backProduct xs
+isSubgroup xs = 
+    xs =~= map inv xs
+    &&
+    xs =~= closure xs
 
 subgroupsOf :: Group a => Int -> [a] -> [[a]]
-subgroupsOf n xs =
+subgroupsOf n xs = if length xs `divides` n then
     [ (e:g) | g <- chooseFrom (delete e xs) (n-1)
-    , isSubgroup (e:g) ]
+    , isSubgroup (e:g) ] else []
 
 subgroups :: Group a => [a] -> [[a]]
 subgroups xs = let n = length xs in
     [ (e:g) | d <- dividers n
     , g <- chooseFrom (delete e xs) (d-1)
     , isSubgroup (e:g) ]
+
+subgroupsUnder :: Group a => Int -> [a] -> [[a]]
+subgroupsUnder cap xs = let n = length xs in
+    [ (e:g) | d <- dividers n
+    , d < cap
+    , g <- chooseFrom (delete e xs) (d-1)
+    , isSubgroup (e:g) ]
+
+conjugacy x = sort . map (\y -> inv x <> y <> x)
+conjugacies g sg = nub [conjugacy x sg | x <- g]
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)

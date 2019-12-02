@@ -3,6 +3,7 @@ import Prelude hiding ((^))
 import Utils
 import Sage
 import Control.Applicative
+import Data.List
 import Data.Semigroup
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
@@ -14,44 +15,51 @@ import Data.Group.NonGroup
 import Data.Group.Units
 --import Data.Group.Table
 
-a2 = undefined
+q2 = undefined
 
-a3 = do
+q3 = do
     __
-    ___ "caylet table Z4"
     dumps $ cayleyTable (modulo 4)
     __
-    ___ "caylet table D4"
     dumpx $ cayleyTable (dihedral 4)
     __
 
-a15 = do
-    print.length $ symmetric 3
-    print.isAbelian $ symmetric 3
+q15 = check (dihedral 3) (hasOrderOf 6) isAbelian
 
-a16 =
+q16 =
     dih 3 (s<>r)^2
     ==
     dih 3 s^2<>r^2
 
-a17 = do
-    ___ "(order, #subgroups)"
-    print.size $ modulo 8
-    print.size $ dihedral 4
-    print.size $ thruples (modulo 2)
+q17 = do
+    print $ test (modulo 8)
+    print $ test (dihedral 4)
+    print $ test (thruples (modulo 2))
     where
-    size xs = (length xs, length (subgroups xs))
+    test xs = check xs (hasOrderOf 8) (length.subgroups)
 
-a26 = all (any selfinv) $ map units [2..35]
+q26 = all (any selfinv) $ map units [2..35]
 
-a34 = do
+q34 = do
     __
-    ___ "subgroups Z3 x Z3"
     dumps.subgroups $ pairs (modulo 3)
     __
-    ___ "subgroups Z9"
     dumps.subgroups $ modulo 9
     __
     
-a35 = dump $ subgroups (dihedral 3)
+q35 = dump $ subgroups (dihedral 3)
+
+q36 = dump $ subgroups (dihedral 4)
+
+q45 = all isSubgroup .
+    mapp intersect . pairs $ subgroups (symmetric 3)
+
+q46 = all isSubgroup .
+    mapp union . pairs $ subgroups (symmetric 3)
+
+q47 = all isSubgroup .
+    mapp products . pairs $ subgroups (symmetric 3)
+
+q52 = check (dihedral 3) (not.isAbelian) $
+    all (not.isAbelian) . subgroups
 

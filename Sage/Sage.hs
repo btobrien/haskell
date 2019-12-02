@@ -23,10 +23,6 @@ c <: p = reduce [c] <> p
 r = rotate 1
 s = reflect 
 
-infixr 0 |. 
-(|.) = ($)
-
---
 infixr 0 ||| 
 name ||| x = putStr (take 13 (name ++ repeat ' ')) >> print x
 
@@ -39,3 +35,7 @@ test n = do
     "dihedralOns"  |||  isGroup . dihedralOn <$> [2..n]
     "alternatings" |||  isGroup . alternating <$> [2..n]
     "symmetrics"   |||  isGroup . symmetric <$> [2..n]
+
+sgs = subgroups (symmetric 4)
+
+init = length sgs
