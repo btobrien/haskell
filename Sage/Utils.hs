@@ -4,7 +4,8 @@ module Utils where
 import Data.List
 import Control.Applicative
 import Control.Monad
-import qualified Data.Set as S
+import qualified Data.Set as Set
+import Data.Set (Set)
 
 generate :: Eq a => (a -> a) -> a -> [a]
 generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
@@ -33,7 +34,13 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 --p ||> p' = (++) <$> const p <*> show.p'; infixl 1 ||>
 
 (=~=) :: Ord a => [a] -> [a] -> Bool
-(=~=) = (==) `on` S.fromList
+(=~=) = (==) `on` Set.fromList
+
+(<~) :: Ord a => [a] -> [a] -> Bool
+(<~) = Set.isSubsetOf `on` Set.fromList
+
+normalize :: Ord a => [a] -> [a] 
+normalize = Set.toList . Set.fromList
 
 choose :: Int -> [a] -> [[a]]
 choose 0 _ = [[]]

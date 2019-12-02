@@ -8,8 +8,8 @@ import Control.Applicative
 import Control.Monad
 import Utils
 
-import qualified Data.Map as Map
-import Data.Map (Map)
+import qualified Data.Set as Set
+import Data.Set (Set, isSubsetOf)
 
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
@@ -46,7 +46,7 @@ invertible xs =
     xs =~= map inv xs
 
 products :: Group a => [a] -> [a] -> [a]
-products xs ys = nub [x <> y | x <- xs, y <- ys]
+products xs ys = normalize [x <> y | x <- xs, y <- ys]
 
 closure :: Group a => [a] -> [a]
 closure = products <$> id <*> id
@@ -55,10 +55,14 @@ closed :: Group a => [a] -> Bool
 closed xs = closure xs =~= xs
 
 uniqueness :: Group a => [a] -> Bool
-uniqueness xs = length xs == length (nub xs)
+uniqueness xs = length xs == length (normalize xs)
+
+containsId :: Group a => [a] -> Bool
+containsId = identity . head . sort
 
 isGroup :: Group a => [a] -> Bool
 isGroup = not.null
+    <&&> containsId
     <&&> uniqueness
     <&&> preserving 
     <&&> invertible 
@@ -71,7 +75,7 @@ close :: Group a => [a] -> [a]
 close = until closed closure 
 
 gen :: Group a => [a] -> [a]
-gen xs = close . nub . (e:) $ xs ++ map inv xs
+gen xs = close . (e:) $ xs ++ map inv xs
 
 hasOrderOf :: Int -> [a] -> Bool
 hasOrderOf n = (n==).length
@@ -97,42 +101,37 @@ commute x y = x <> y == y <> x
 commutes :: Group a => [a] -> a -> Bool
 commutes xs x = all (commute x) xs
 
-center :: Group a => [a] -> [a]
-center = filter <$> commutes <*> id
-
 isAbelian :: Group a => [a] -> Bool
 isAbelian = all (uncurry commute) . pairs
+
+center :: Group a => [a] -> [a]
+center = filter <$> commutes <*> id
 
 backProduct :: Group a => [a] -> [a]
 backProduct = map (\(x,y) -> x <> inv y) . pairs
 
--- shortcircuits quicker than backproduct test
-isSubgroup :: Group a => [a] -> Bool
-isSubgroup xs = 
-    xs =~= map inv xs
-    &&
-    xs =~= closure xs
-
 subgroupsOf :: Group a => Int -> [a] -> [[a]]
 subgroupsOf n xs = if length xs `divides` n then
-    [ (e:g) | g <- chooseFrom (delete e xs) (n-1)
-    , isSubgroup (e:g) ] else []
+    [ (e:g) | g <- chooseFrom (presort xs) (n-1)
+    , sgtest g ] else []
 
 subgroups :: Group a => [a] -> [[a]]
 subgroups xs = let n = length xs in
     [ (e:g) | d <- dividers n
-    , g <- chooseFrom (delete e xs) (d-1)
-    , isSubgroup (e:g) ]
+    , g <- chooseFrom (presort xs) (d-1)
+    , sgtest g ]
 
-subgroupsUnder :: Group a => Int -> [a] -> [[a]]
-subgroupsUnder cap xs = let n = length xs in
-    [ (e:g) | d <- dividers n
-    , d < cap
-    , g <- chooseFrom (delete e xs) (d-1)
-    , isSubgroup (e:g) ]
+presort :: Group a => [a] -> [a]
+presort = sort . delete e
+
+sgtest :: Group a => [a] -> Bool
+sgtest xs = 
+    xs == sort (map inv xs)
+    &&
+    (e:xs) == closure xs
 
 conjugacy x = sort . map (\y -> inv x <> y <> x)
-conjugacies g sg = nub [conjugacy x sg | x <- g]
+conjugacies g sg = normalize [conjugacy x sg | x <- g]
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
