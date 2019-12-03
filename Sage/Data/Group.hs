@@ -134,21 +134,32 @@ subgroupsWithOrder' withOrder xs = do
     isSubgroup g = 
         sort (map inv g) == g
         &&
-        closure g `isSubsequenceOf` (e:g)
+        closure g <~ (e:g)
 
 subgroups :: Group a => [a] -> [[a]]
 subgroups = subgroupsWithOrder (const True)
 
 subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
 subgroupsWithOrder withOrder xs =
-    if isCyclic xs
-    then filter (withOrder . length) (cyclicSubgroups xs) 
+    if isCyclic xs then
+        filter (withOrder . length) (cyclicSubgroups xs) 
     else do
-    d <- filter withOrder . dividers $ length xs
-    g <- filter isSubgroup . pack (d-1) $ inverses xs
-    return (e : concat g)
-    where
-    isSubgroup g = closure (map head g) `isSubsequenceOf` (e : sort (concat g))
+        d <- filter withOrder . dividers $ length xs
+        g <- filter isSubgroup . pack (d-1) $ inverses xs
+        return (e : concat g)
+        where
+        isSubgroup g = closure (map head g) <~ (e : sort (concat g))
+
+subclosuresWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
+subclosuresWithOrder withOrder xs = let n = length xs in do
+        d <- filter (withOrder <&&> not.divides n) [1..n]
+        g <- filter isSubgroup . pack (d-1) $ inverses xs
+        return (e : concat g)
+        where
+        isSubgroup g = closure (map head g) <~ (e : sort (concat g))
+
+subclosures :: Group a => [a] -> [[a]]
+subclosures = subclosuresWithOrder (const True)
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
