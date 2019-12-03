@@ -30,7 +30,7 @@ recycle f = filter ((>1).length) . unfold popcycle . sort . nub
     where
     popcycle (x:xs) = let cycle = generate f x in (cycle, xs \\ cycle)
 
-newtype Permutation a = P [Cycle a]; cycles (P cs) = cs
+newtype Permutation a = P [Cycle a]; cyclesOf (P cs) = cs
 
 reduce :: Ord a => [Cycle a] -> Permutation a
 reduce = P . (recycle <$> through <*> concat)
@@ -42,26 +42,26 @@ permutations :: Ord a => [a] -> [Permutation a]
 permutations = map toPermutation . Data.List.permutations
 
 instance Show a => Show (Permutation a) where
-    show = coallesce . concat . map showcycle . cycles where 
+    show = coallesce . concat . map showcycle . cyclesOf where 
         coallesce [] = "()"
         coallesce s = s
 instance Eq a => Eq (Permutation a) where
-    (==) = (==) `on` cycles
+    (==) = (==) `on` cyclesOf
 instance Ord a => Ord (Permutation a) where
-    compare = compare `on` cycles
+    compare = compare `on` cyclesOf
 instance Ord a => Semigroup (Permutation a) where
-    (<>) = reduce .: (++) `on` cycles
+    (<>) = reduce .: (++) `on` cyclesOf
 instance Ord a => Monoid (Permutation a) where
     mempty = P []
     mappend = (<>)
 instance Ord a => Group (Permutation a) where
-    inv = reduce . reverse . map reverse . cycles
+    inv = reduce . reverse . map reverse . cyclesOf
 
 apply :: Ord a => Permutation a -> a -> a
-apply = through . cycles
+apply = through . cyclesOf
 
 elements :: Ord a => Permutation a -> [a]
-elements = sort . nub . concat . cycles
+elements = sort . nub . concat . cyclesOf
 
 mapping :: Ord a => Permutation a -> [(a,a)]
 mapping = map <$> also.apply <*> elements
@@ -69,14 +69,11 @@ mapping = map <$> also.apply <*> elements
 symmetric :: Int -> [Permutation Int]
 symmetric n = Data.Group.Permutation.permutations [1..n]
 
-symmetric' n = let a = alternating n in
-    a ++ (symmetric n \\ a)
-
 transpositions :: Ord a => Permutation a -> [(a,a)]
-transpositions = concat . map neighbors . cycles
+transpositions = concat . map neighbors . cyclesOf
 
 even :: Ord a => Permutation a -> Bool
-even = Prelude.even . sum . map (length.tail) . cycles
+even = Prelude.even . sum . map (length.tail) . cyclesOf
 
 alternating :: Int -> [Permutation Int]
 alternating = filter Data.Group.Permutation.even . symmetric

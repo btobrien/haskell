@@ -27,23 +27,26 @@ identity :: Group a => a -> Bool
 identity = (==e)
 
 selfinv :: Group a => a -> Bool
-selfinv = inverses <$> id <*> id
+selfinv = inverts <$> id <*> id
 
 preserving :: Group a => [a] -> Bool
 preserving xs = 
     xs == map (e<>) xs &&
     xs == map (<>e) xs
 
-inverses :: Group a => a -> a -> Bool
-inverses x y =
+inverts :: Group a => a -> a -> Bool
+inverts x y =
     e == x <> y &&
     e == y <> x
 
 invertible :: Group a => [a] -> Bool
 invertible xs =
-    all (inverses <$> inv <*> id) xs
+    all (inverts <$> inv <*> id) xs
     && 
     xs =~= map inv xs
+
+inverses :: Group a => [a] -> [[a]]
+inverses = normalize . map (\x -> normalize [x,inv x]) . delete e
 
 products :: Group a => [a] -> [a] -> [a]
 products xs ys = normalize [x <> y | x <- xs, y <- ys]
@@ -83,6 +86,9 @@ hasOrderOf n = (n==).length
 cycle :: Group a => a -> [a] 
 cycle g = generate (g<>) e 
 
+cycles :: Group a => [a] -> [[a]] 
+cycles = normalize . map (normalize.cycle)
+
 order :: Group a => a -> Int 
 order = length . cycle
 
@@ -92,8 +98,14 @@ generates xs x = length xs == length (cycle x)
 generators :: Group a => [a] -> [a]
 generators = filter <$> generates <*> id
 
+nonGenerators :: Group a => [a] -> [a]
+nonGenerators xs = filter (not . generates xs) xs
+
 isCyclic :: Group a => [a] -> Bool
 isCyclic = any <$> generates <*> id
+
+cyclicSubgroups :: Group a => [a] -> [[a]]
+cyclicSubgroups = cycles . delete e . nonGenerators
 
 commute :: Group a => a -> a -> Bool
 commute x y = x <> y == y <> x
@@ -111,10 +123,10 @@ conjugacy x = sort . map (\y -> inv x <> y <> x)
 conjugacies g sg = normalize [conjugacy x sg | x <- g]
 
 backProduct :: Group a => [a] -> [a]
-backProduct = map (\(x,y) -> x <> inv y) . pairs
+backProduct = normalize . map (\(x,y) -> x <> inv y) . pairs
 
-subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
-subgroupsWithOrder withOrder xs = do
+subgroupsWithOrder' :: Group a => (Int -> Bool) -> [a] -> [[a]]
+subgroupsWithOrder' withOrder xs = do
     d <- filter withOrder . dividers $ length xs
     g <- filter isSubgroup . choose (d-1) . sort . delete e $ xs
     return (e:g)
@@ -122,10 +134,21 @@ subgroupsWithOrder withOrder xs = do
     isSubgroup g = 
         sort (map inv g) == g
         &&
-        closure g == (e:g)
+        closure g `isSubsequenceOf` (e:g)
 
 subgroups :: Group a => [a] -> [[a]]
 subgroups = subgroupsWithOrder (const True)
+
+subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
+subgroupsWithOrder withOrder xs =
+    if isCyclic xs
+    then filter (withOrder . length) (cyclicSubgroups xs) 
+    else do
+    d <- filter withOrder . dividers $ length xs
+    g <- filter isSubgroup . pack (d-1) $ inverses xs
+    return (e : concat g)
+    where
+    isSubgroup g = closure (map head g) `isSubsequenceOf` (e : sort (concat g))
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)

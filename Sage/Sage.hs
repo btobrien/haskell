@@ -1,6 +1,7 @@
 
 module Sage where
 
+import Prelude hiding (cycle, (^))
 import Data.Semigroup
 import Utils
 import Data.Semigroup

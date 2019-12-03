@@ -46,17 +46,25 @@ choose :: Int -> [a] -> [[a]]
 choose 0 _ = [[]]
 choose _ [] = []
 choose n (x:xs) = map (x:) (choose (n-1) xs) ++ choose n xs
-chooseFrom = flip choose
+    
+pack :: Int -> [[a]] -> [[[a]]]
+pack n _ | n < 0 = []
+pack 0 _ = [[]]
+pack _ [] = []
+pack n (x:xs) = map (x:) (pack (n - (length x)) xs) ++ pack n xs
     
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
 
 dumps :: Show a => [[a]] -> IO ()
-dumps xss = putStr . unlines . map (intercalate " ") . (map.map) (pad wid . show)$ xss
-    where wid = maximum . map (length.show) . concat $ xss
+dumps xss = putStr . unlines . map (intercalate " ") . (map.map) show $ xss
 
 dumpx :: Show a => [[a]] -> IO ()
-dumpx xss = putStr . unlines . addlines . map (intercalate " | ") . (map.map) (pad wid . show)$ xss
+dumpx xss = putStr . unlines . map (intercalate " ") . (map.map) (pad wid . show)$ xss
+    where wid = maximum . map (length.show) . concat $ xss
+
+dumpt :: Show a => [[a]] -> IO ()
+dumpt xss = putStr . unlines . addlines . map (intercalate " | ") . (map.map) (pad wid . show)$ xss
     where
     wid = maximum . map (length.show) . concat $ xss
     addlines ss = let n = length (head ss) in intersperse (replicate n '-') ss
