@@ -105,33 +105,27 @@ isAbelian :: Group a => [a] -> Bool
 isAbelian = all (uncurry commute) . pairs
 
 center :: Group a => [a] -> [a]
-center = filter <$> commutes <*> id
+center = normalize . (filter <$> commutes <*> id)
+
+conjugacy x = sort . map (\y -> inv x <> y <> x)
+conjugacies g sg = normalize [conjugacy x sg | x <- g]
 
 backProduct :: Group a => [a] -> [a]
 backProduct = map (\(x,y) -> x <> inv y) . pairs
 
-subgroupsOf :: Group a => Int -> [a] -> [[a]]
-subgroupsOf n xs = if length xs `divides` n then
-    [ (e:g) | g <- chooseFrom (presort xs) (n-1)
-    , sgtest g ] else []
+subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
+subgroupsWithOrder withOrder xs = do
+    d <- filter withOrder . dividers $ length xs
+    g <- filter isSubgroup . choose (d-1) . sort . delete e $ xs
+    return (e:g)
+    where
+    isSubgroup g = 
+        sort (map inv g) == g
+        &&
+        closure g == (e:g)
 
 subgroups :: Group a => [a] -> [[a]]
-subgroups xs = let n = length xs in
-    [ (e:g) | d <- dividers n
-    , g <- chooseFrom (presort xs) (d-1)
-    , sgtest g ]
-
-presort :: Group a => [a] -> [a]
-presort = sort . delete e
-
-sgtest :: Group a => [a] -> Bool
-sgtest xs = 
-    xs == sort (map inv xs)
-    &&
-    (e:xs) == closure xs
-
-conjugacy x = sort . map (\y -> inv x <> y <> x)
-conjugacies g sg = normalize [conjugacy x sg | x <- g]
+subgroups = subgroupsWithOrder (const True)
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
