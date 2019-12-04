@@ -37,23 +37,25 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 (=~=) = (==) `on` Set.fromList
 
 (<~) :: Ord a => [a] -> [a] -> Bool
---(<~) = Set.isSubsetOf `on` Set.fromAscList
-(<~) = isSubsequenceOf
+(<~) = Set.isSubsetOf `on` Set.fromAscList
+--(<~) = isSubsequenceOf
 
 normalize :: Ord a => [a] -> [a] 
 normalize = Set.toList . Set.fromList
 
 choose :: Int -> [a] -> [[a]]
-choose 0 _ = [[]]
-choose _ [] = []
+choose 0 _      = [[]]
+choose _ []     = []
 choose n (x:xs) = map (x:) (choose (n-1) xs) ++ choose n xs
     
-pack :: Int -> [[a]] -> [[[a]]]
-pack n _ | n < 0 = []
-pack 0 _ = [[]]
-pack _ [] = []
-pack n (x:xs) = map (x:) (pack (n - (length x)) xs) ++ pack n xs
-    
+pack :: Eq a => Int -> [[a]] -> [[a]]
+pack = map concat .: pack'
+	where
+	pack' n _ | n < 0 = []
+	pack' 0 _         = [[]]
+	pack' _ []        = []
+	pack' n (xs:xss)  = map (xs:) (pack' (n - length xs) (filter (null.intersect xs) xss)) ++ pack' n xss
+
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
 
@@ -70,7 +72,6 @@ dumpt xss = putStr . unlines . addlines . map (intercalate " | ") . (map.map) (p
     wid = maximum . map (length.show) . concat $ xss
     addlines ss = let n = length (head ss) in intersperse (replicate n '-') ss
 
-
 ___ = putStrLn 
 __ = putStrLn ""
 ____ = putStr
@@ -79,11 +80,12 @@ pad n xs = take n $ xs ++ repeat ' '
 
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
 groupOn = groupBy.((==)`on`)
+
 -- we have more efficient impls of these
 sortOn :: Ord b => (a -> b) -> [a] -> [a]
 sortOn = sortBy . (compare `on`)
 
--- move Prime into separate module
+-- create separate prime module?
 
 divisibleBy :: Int -> Int -> Bool
 divisibleBy x = (==0) . (`mod`x)
@@ -91,31 +93,30 @@ divisibleBy x = (==0) . (`mod`x)
 divides :: Int -> Int -> Bool
 divides = flip divisibleBy
 
-dividers :: Int -> [Int]
-dividers n = filter (divides n) [2..half]
-    where half = n `div` 2 
+divisors :: Int -> [Int]
+divisors n = filter (divides n) [2..(n `div` 2)]
 
--- sorted
-smallestDivider :: Int -> Int
-smallestDivider n = head . (++[n]) . dividers $ n
-
-sieve :: [Int] -> [Int]
-sieve [] = []
-sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
+-- assumes divisors is sorted
+smallestDivisor :: Int -> Int
+smallestDivisor n = head . (++[n]) . divisors $ n
 
 primes :: [Int]
 primes = sieve [2..]
-
-primesUnder :: Int -> [Int]
-primesUnder n = sieve [2..(n-1)]
+	where
+	sieve [] = []
+	sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
 
 factor :: Int -> [Int]
-factor = unfoldr $ \n -> if n == 1 then Nothing else let d = smallestDivider n in Just (d, n `div` d)
+factor = unfoldr $ \n ->
+    if n == 1
+	then Nothing
+	else let d = smallestDivisor n in Just (d, n `div` d)
 
 isPrime :: Int -> Bool
 isPrime n = factor n == [n]
 
-check g assumption f = if assumption g
-        then Just (f g)
-        else Nothing
+check g assumption f =
+	if assumption g
+	then Just (f g)
+	else Nothing
 

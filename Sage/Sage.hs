@@ -18,6 +18,7 @@ import Control.Applicative
 (...) :: Semigroup a => a -> a -> a
 (...) = flip (<>)
 
+infixr 5 <:
 (<:) :: Ord a => Cycle a -> Permutation a -> Permutation a
 c <: p = reduce [c] <> p
 

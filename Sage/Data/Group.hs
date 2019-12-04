@@ -8,9 +8,6 @@ import Control.Applicative
 import Control.Monad
 import Utils
 
-import qualified Data.Set as Set
-import Data.Set (Set, isSubsetOf)
-
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
     e :: a
@@ -70,12 +67,12 @@ uniqueness :: Group a => [a] -> Bool
 uniqueness xs = length xs == length (normalize xs)
 
 -- requires identity to be the minimal element
-containsId :: Group a => [a] -> Bool
-containsId = identity . head . sort
+checkid :: Group a => [a] -> Bool
+checkid = identity . head . sort
 
 isGroup :: Group a => [a] -> Bool
 isGroup = not.null
-    <&&> containsId
+    <&&> checkid
     <&&> uniqueness
     <&&> preserving 
     <&&> invertible 
@@ -94,12 +91,12 @@ nonGenerators :: Group a => [a] -> [a]
 nonGenerators xs = filter (not . generates xs) xs
 
 cycles :: Group a => [a] -> [[a]] 
-cycles = normalize . map (normalize.delete e.cycle) . delete e . nonGenerators
+cycles = normalize . map (normalize . delete e . cycle) . delete e . nonGenerators
 
 subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
 subgroupsWithOrder withOrder xs = do
-    d <- filter withOrder . dividers $ length xs
-    g <- filter closed . map concat . pack (d-1) $ cycles xs
+    d <- filter withOrder $ divisors (length xs)
+    g <- filter closed $ pack (d-1) (cycles xs)
     return (e:g)
 
 subgroups :: Group a => [a] -> [[a]]
@@ -126,22 +123,14 @@ isAbelian = all (uncurry commute) . pairs
 center :: Group a => [a] -> [a]
 center = normalize . (filter <$> commutes <*> id)
 
+conjugacy :: Group a => a -> [a] -> [a]
 conjugacy x = sort . map (\y -> inv x <> y <> x)
+
+conjugacies :: Group a => [a] -> [a] -> [[a]]
 conjugacies g sg = normalize [conjugacy x sg | x <- g]
 
 backProduct :: Group a => [a] -> [a]
 backProduct = normalize . map (\(x,y) -> x <> inv y) . pairs
-
---subgroupsWithOrder' :: Group a => (Int -> Bool) -> [a] -> [[a]]
---subgroupsWithOrder' withOrder xs = do
-    --d <- filter withOrder . dividers $ length xs
-    --g <- filter isSubgroup . choose (d-1) . sort . delete e $ xs
-    --return (e:g)
-    --where
-    --isSubgroup g = 
-        --sort (map inv g) == g
-        -- &&
-        --closure g <~ (e:g)
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
