@@ -37,8 +37,8 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 (=~=) = (==) `on` Set.fromList
 
 (<~) :: Ord a => [a] -> [a] -> Bool
-(<~) = Set.isSubsetOf `on` Set.fromAscList
---(<~) = isSubsequenceOf
+--(<~) = Set.isSubsetOf `on` Set.fromAscList
+(<~) = isSubsequenceOf
 
 normalize :: Ord a => [a] -> [a] 
 normalize = Set.toList . Set.fromList

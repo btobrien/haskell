@@ -23,6 +23,9 @@ g ^ n | n < 0 = inv g ^ abs n
 g ^ n = (g <> g) ^ (n - 1)
  -- could use binary evaluation here..
 
+cayleyTable :: Group a => [a] -> [[a]]
+cayleyTable xs = (<$>xs) . (<>) <$> xs
+    
 identity :: Group a => a -> Bool
 identity = (==e)
 
@@ -55,11 +58,18 @@ closure :: Group a => [a] -> [a]
 closure = products <$> id <*> id
 
 closed :: Group a => [a] -> Bool
-closed xs = closure xs =~= xs
+closed xs = closure xs <~ (e : sort xs)
+
+close :: Group a => [a] -> [a]
+close = until closed closure . normalize 
+
+gen :: Group a => [a] -> [a]
+gen xs = close . (e:) $ xs ++ map inv xs
 
 uniqueness :: Group a => [a] -> Bool
 uniqueness xs = length xs == length (normalize xs)
 
+-- requires identity to be the minimal element
 containsId :: Group a => [a] -> Bool
 containsId = identity . head . sort
 
@@ -71,26 +81,8 @@ isGroup = not.null
     <&&> invertible 
     <&&> closed
 
-cayleyTable :: Group a => [a] -> [[a]]
-cayleyTable xs = (<$>xs) . (<>) <$> xs
-    
-close :: Group a => [a] -> [a]
-close = until closed closure 
-
-gen :: Group a => [a] -> [a]
-gen xs = close . (e:) $ xs ++ map inv xs
-
-hasOrderOf :: Int -> [a] -> Bool
-hasOrderOf n = (n==).length
-
 cycle :: Group a => a -> [a] 
 cycle g = generate (g<>) e 
-
-cycles :: Group a => [a] -> [[a]] 
-cycles = normalize . map (normalize.cycle)
-
-order :: Group a => a -> Int 
-order = length . cycle
 
 generates :: Group a => [a] -> a -> Bool
 generates xs x = length xs == length (cycle x)
@@ -101,11 +93,26 @@ generators = filter <$> generates <*> id
 nonGenerators :: Group a => [a] -> [a]
 nonGenerators xs = filter (not . generates xs) xs
 
+cycles :: Group a => [a] -> [[a]] 
+cycles = normalize . map (normalize.delete e.cycle) . delete e . nonGenerators
+
+subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
+subgroupsWithOrder withOrder xs = do
+    d <- filter withOrder . dividers $ length xs
+    g <- filter closed . map concat . pack (d-1) $ cycles xs
+    return (e:g)
+
+subgroups :: Group a => [a] -> [[a]]
+subgroups = subgroupsWithOrder (const True)
+
 isCyclic :: Group a => [a] -> Bool
 isCyclic = any <$> generates <*> id
 
-cyclicSubgroups :: Group a => [a] -> [[a]]
-cyclicSubgroups = cycles . delete e . nonGenerators
+order :: Group a => a -> Int 
+order = length . cycle
+
+hasOrderOf :: Int -> [a] -> Bool
+hasOrderOf n = (n==).length
 
 commute :: Group a => a -> a -> Bool
 commute x y = x <> y == y <> x
@@ -125,30 +132,16 @@ conjugacies g sg = normalize [conjugacy x sg | x <- g]
 backProduct :: Group a => [a] -> [a]
 backProduct = normalize . map (\(x,y) -> x <> inv y) . pairs
 
-subgroupsWithOrder' :: Group a => (Int -> Bool) -> [a] -> [[a]]
-subgroupsWithOrder' withOrder xs = do
-    d <- filter withOrder . dividers $ length xs
-    g <- filter isSubgroup . choose (d-1) . sort . delete e $ xs
-    return (e:g)
-    where
-    isSubgroup g = 
-        sort (map inv g) == g
-        &&
-        closure g <~ (e:g)
-
-subgroups :: Group a => [a] -> [[a]]
-subgroups = subgroupsWithOrder (const True)
-
-subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
-subgroupsWithOrder withOrder xs =
-    if isCyclic xs then
-        filter (withOrder . length) (cyclicSubgroups xs) 
-    else do
-        d <- filter withOrder . dividers $ length xs
-        g <- filter isSubgroup . map concat . pack (d-1) $ inverses xs
-        return (e : g)
-        where
-        isSubgroup g = closure g <~ (e: sort g)
+--subgroupsWithOrder' :: Group a => (Int -> Bool) -> [a] -> [[a]]
+--subgroupsWithOrder' withOrder xs = do
+    --d <- filter withOrder . dividers $ length xs
+    --g <- filter isSubgroup . choose (d-1) . sort . delete e $ xs
+    --return (e:g)
+    --where
+    --isSubgroup g = 
+        --sort (map inv g) == g
+        -- &&
+        --closure g <~ (e:g)
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
