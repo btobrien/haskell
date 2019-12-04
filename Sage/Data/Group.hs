@@ -145,21 +145,10 @@ subgroupsWithOrder withOrder xs =
         filter (withOrder . length) (cyclicSubgroups xs) 
     else do
         d <- filter withOrder . dividers $ length xs
-        g <- filter isSubgroup . pack (d-1) $ inverses xs
-        return (e : concat g)
+        g <- filter isSubgroup . map concat . pack (d-1) $ inverses xs
+        return (e : g)
         where
-        isSubgroup g = closure (map head g) <~ (e : sort (concat g))
-
-subclosuresWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
-subclosuresWithOrder withOrder xs = let n = length xs in do
-        d <- filter (withOrder <&&> not.divides n) [1..n]
-        g <- filter isSubgroup . pack (d-1) $ inverses xs
-        return (e : concat g)
-        where
-        isSubgroup g = closure (map head g) <~ (e : sort (concat g))
-
-subclosures :: Group a => [a] -> [[a]]
-subclosures = subclosuresWithOrder (const True)
+        isSubgroup g = closure g <~ (e: sort g)
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
