@@ -17,8 +17,7 @@ infixr 9 ^
 g ^ 0 = e
 g ^ 1 = g
 g ^ n | n < 0 = inv g ^ abs n
-g ^ n = (g <> g) ^ (n - 1)
- -- could use binary evaluation here..
+g ^ n = let m = n `div` 2 in g^m <> g^(n-m)
 
 cayleyTable :: Group a => [a] -> [[a]]
 cayleyTable xs = (<$>xs) . (<>) <$> xs
