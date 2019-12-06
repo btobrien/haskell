@@ -25,8 +25,8 @@ data Modulo = M { baseof :: Maybe Int, valueof :: Int }
 evaluate :: Modulo -> Int
 evaluate x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
 
-force :: Modulo -> Modulo
-force m = M (baseof m) (evaluate m)
+forceModulo :: Modulo -> Modulo
+forceModulo m = M (baseof m) (evaluate m)
 
 modify :: (Int -> Int) -> Modulo -> Modulo
 modify f x = x { valueof = f.valueof $ x }
@@ -50,7 +50,7 @@ instance Num Modulo where
     negate = modify negate
     fromInteger = M Nothing . fromIntegral
     -- important to force evaluation
-    (*) = compose (*) `on` force
+    (*) = compose (*) `on` forceModulo
     abs = undefined
     signum = undefined
 instance Semigroup Modulo  where (<>) = (+)

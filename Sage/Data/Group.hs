@@ -7,6 +7,7 @@ import Prelude hiding (cycle, (^))
 import Control.Applicative
 import Control.Monad
 import Utils
+import Control.Parallel
 
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
@@ -90,7 +91,11 @@ nonGenerators :: Group a => [a] -> [a]
 nonGenerators xs = filter (not . generates xs) xs
 
 cycles :: Group a => [a] -> [[a]] 
-cycles = normalize . map (normalize . delete e . cycle) . delete e . nonGenerators
+cycles =
+    normalize .
+    map (normalize . delete e . cycle) .
+    delete e .
+    nonGenerators
 
 subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
 subgroupsWithOrder withOrder xs = do
@@ -100,6 +105,18 @@ subgroupsWithOrder withOrder xs = do
 
 subgroups :: Group a => [a] -> [[a]]
 subgroups = subgroupsWithOrder (const True)
+
+subgroups' :: Group a => [a] -> [[a]]
+subgroups' xs | length (divisors (length xs)) < 4 = subgroups xs
+subgroups' xs = let n = (head . drop 1 . reverse . divisors $ length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(>=n) xs
+
+subgroups'' :: Group a => [a] -> [[a]]
+subgroups'' xs = let n = length xs in
+    subgroupsWithOrder(< n`div`4) xs
+    +|+
+    subgroupsWithOrder ((>= n `div` 4) <&&> (< n`div`2)) xs
+    +|+
+    subgroupsWithOrder(== n`div`2) xs
 
 isCyclic :: Group a => [a] -> Bool
 isCyclic = any <$> generates <*> id

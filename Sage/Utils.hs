@@ -4,6 +4,7 @@ module Utils where
 import Data.List
 import Control.Applicative
 import Control.Monad
+import Control.Parallel
 import qualified Data.Set as Set
 import Data.Set (Set)
 
@@ -33,6 +34,16 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 --p <| p' = (++) <$> p <*> const p'; infixl 1 <|
 --p ||> p' = (++) <$> const p <*> show.p'; infixl 1 ||>
 
+force :: [a] -> ()
+force xs = go xs `pseq` ()
+	where
+	go (_:xs) = go xs
+	go [] = 1
+
+infixr 5 +|+
+(+|+) :: [a] -> [a] -> [a]
+xs +|+ ys = force xs `par` (force ys `pseq` (xs ++ ys))
+
 (=~=) :: Ord a => [a] -> [a] -> Bool
 (=~=) = (==) `on` Set.fromList
 
@@ -61,6 +72,9 @@ dump = mapM_ print
 
 dumps :: Show a => [[a]] -> IO ()
 dumps xss = putStr . unlines . map (intercalate " ") . (map.map) show $ xss
+
+dumpss :: Show a => [[[a]]] -> IO ()
+dumpss = mapM_ dumps
 
 dumpx :: Show a => [[a]] -> IO ()
 dumpx xss = putStr . unlines . map (intercalate " ") . (map.map) (pad wid . show)$ xss
