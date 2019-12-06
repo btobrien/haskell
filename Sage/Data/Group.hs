@@ -104,19 +104,7 @@ subgroupsWithOrder withOrder xs = do
     return (e:g)
 
 subgroups :: Group a => [a] -> [[a]]
-subgroups = subgroupsWithOrder (const True)
-
-subgroups' :: Group a => [a] -> [[a]]
-subgroups' xs | length (divisors (length xs)) < 4 = subgroups xs
-subgroups' xs = let n = (head . drop 1 . reverse . divisors $ length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(>=n) xs
-
-subgroups'' :: Group a => [a] -> [[a]]
-subgroups'' xs = let n = length xs in
-    subgroupsWithOrder(< n`div`4) xs
-    +|+
-    subgroupsWithOrder ((>= n `div` 4) <&&> (< n`div`2)) xs
-    +|+
-    subgroupsWithOrder(== n`div`2) xs
+subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
 
 isCyclic :: Group a => [a] -> Bool
 isCyclic = any <$> generates <*> id

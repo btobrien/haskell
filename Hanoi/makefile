@@ -20,5 +20,5 @@ coat:
 	cp coat.sh ~/bin/coat
 
 clean:
-	find . -name '*.hi' -delete
-	find . -name '*.o' -delete
+	find . -name '**/.hi' -delete
+	find . -name '**/.o' -delete

@@ -2,7 +2,7 @@
 all : dihsubs
 
 dihsubs:
-	ghc -threaded -O2 -o ~/bin/dihsubs main/dihsubs.hs
+	ghc -threaded -rtsopts -O2 -o ~/bin/dihsubs main/dihsubs.hs
 
 clean:
 	find . -name '*.hi' -delete

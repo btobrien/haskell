@@ -34,15 +34,9 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 --p <| p' = (++) <$> p <*> const p'; infixl 1 <|
 --p ||> p' = (++) <$> const p <*> show.p'; infixl 1 ||>
 
-force :: [a] -> ()
-force xs = go xs `pseq` ()
-	where
-	go (_:xs) = go xs
-	go [] = 1
-
 infixr 5 +|+
 (+|+) :: [a] -> [a] -> [a]
-xs +|+ ys = force xs `par` (force ys `pseq` (xs ++ ys))
+xs +|+ ys = length ys `par` (xs ++ ys)
 
 (=~=) :: Ord a => [a] -> [a] -> Bool
 (=~=) = (==) `on` Set.fromList
@@ -113,6 +107,9 @@ divisors n = filter (divides n) [2..(n `div` 2)]
 -- assumes divisors is sorted
 smallestDivisor :: Int -> Int
 smallestDivisor n = head . (++[n]) . divisors $ n
+
+largestDivisor :: Int -> Int
+largestDivisor n = last . divisors $ n
 
 primes :: [Int]
 primes = sieve [2..]
