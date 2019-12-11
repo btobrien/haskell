@@ -112,11 +112,11 @@ setsFrom f hs gs = normalize [ sort (f g hs) | g <- gs]
 conjugate :: Group a => a -> a -> a
 conjugate x y = inv x <> y <> x
 
-rcosets :: Group a => [a] -> [a] -> [[a]] 
-rcosets = setsFrom (\g -> map (<>g))
+cosetsr :: Group a => [a] -> [a] -> [[a]] 
+cosetsr = setsFrom (\g -> map (<>g))
 
-lcosets :: Group a => [a] -> [a] -> [[a]] 
-lcosets = setsFrom (\g -> map (g<>))
+cosetsl :: Group a => [a] -> [a] -> [[a]] 
+cosetsl = setsFrom (\g -> map (g<>))
 
 conjugacies :: Group a => [a] -> [a] -> [[a]]
 conjugacies = setsFrom (\g -> map (conjugate g))
