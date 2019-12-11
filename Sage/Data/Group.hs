@@ -118,11 +118,11 @@ hasOrderOf n = (n==).length
 commute :: Group a => a -> a -> Bool
 commute x y = x <> y == y <> x
 
-commutes :: Group a => [a] -> a -> Bool
-commutes xs x = all (commute x) xs
-
 isAbelian :: Group a => [a] -> Bool
 isAbelian = all (uncurry commute) . pairs
+
+commutes :: Group a => [a] -> a -> Bool
+commutes xs x = all (commute x) xs
 
 center :: Group a => [a] -> [a]
 center = normalize . (filter <$> commutes <*> id)

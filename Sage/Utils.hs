@@ -59,7 +59,10 @@ pack = map concat .: pack'
 	pack' n _ | n < 0 = []
 	pack' 0 _         = [[]]
 	pack' _ []        = []
-	pack' n (xs:xss)  = map (xs:) (pack' (n - length xs) (filter (null.intersect xs) xss)) ++ pack' n xss
+	pack' n (xs:xss)  = map (xs:) chosen ++ notChosen
+		where
+		chosen = pack' (n - length xs) (filter (null . intersect xs) xss)
+		notChosen = pack' n xss
 
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
