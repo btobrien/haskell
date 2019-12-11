@@ -106,6 +106,24 @@ subgroupsWithOrder withOrder xs = do
 subgroups :: Group a => [a] -> [[a]]
 subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
 
+setsFrom :: Group a => (a -> [a] -> [a]) -> [a] -> [a] -> [[a]] 
+setsFrom f hs gs = normalize [ sort (f g hs) | g <- gs]
+
+conjugate :: Group a => a -> a -> a
+conjugate x y = inv x <> y <> x
+
+rcosets :: Group a => [a] -> [a] -> [[a]] 
+rcosets = setsFrom (\g -> map (<>g))
+
+lcosets :: Group a => [a] -> [a] -> [[a]] 
+lcosets = setsFrom (\g -> map (g<>))
+
+conjugacies :: Group a => [a] -> [a] -> [[a]]
+conjugacies = setsFrom (\g -> map (conjugate g))
+
+backProduct :: Group a => [a] -> [a]
+backProduct = normalize . map (\(x,y) -> x <> inv y) . pairs
+
 isCyclic :: Group a => [a] -> Bool
 isCyclic = any <$> generates <*> id
 
@@ -126,15 +144,6 @@ commutes xs x = all (commute x) xs
 
 center :: Group a => [a] -> [a]
 center = normalize . (filter <$> commutes <*> id)
-
-conjugacy :: Group a => a -> [a] -> [a]
-conjugacy x = sort . map (\y -> inv x <> y <> x)
-
-conjugacies :: Group a => [a] -> [a] -> [[a]]
-conjugacies g sg = normalize [conjugacy x sg | x <- g]
-
-backProduct :: Group a => [a] -> [a]
-backProduct = normalize . map (\(x,y) -> x <> inv y) . pairs
 
 instance (Group a, Group b) => Group (a,b) where
     inv (a,b) = (inv a, inv b)
