@@ -65,7 +65,7 @@ rotateOn n = P [[1..n]]
 reflectOn :: Int -> Permutation Int
 reflectOn n = reduce
     . map (\x -> [evaluate x, (evaluate.inv) x])
-    . take (n`div`2) . tail
+    . take (n`div`2)
     $ modulo n
 
 dihedralOn :: Int -> [Permutation Int]

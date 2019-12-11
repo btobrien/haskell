@@ -118,6 +118,12 @@ cosetsr = setsFrom (\g -> map (<>g))
 cosetsl :: Group a => [a] -> [a] -> [[a]] 
 cosetsl = setsFrom (\g -> map (g<>))
 
+cosets :: Group a => [a] -> [a] -> [[a]] 
+cosets = cosetsl
+
+matchingCosets :: Group a => [a] -> [a] -> Bool
+matchingCosets hs gs = cosetsr hs gs == cosetsl hs gs
+
 conjugacies :: Group a => [a] -> [a] -> [[a]]
 conjugacies = setsFrom (\g -> map (conjugate g))
 
