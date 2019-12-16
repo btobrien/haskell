@@ -7,12 +7,17 @@ import Prelude hiding (cycle, (^))
 import Control.Applicative
 import Control.Monad
 import Utils
-import Control.Parallel
 
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
     e :: a
     e = mempty
+
+(><) :: Semigroup a => a -> a -> a
+(><) = flip (<>)
+
+fold :: Group a => [a] -> a
+fold = foldl' (><) e
 
 infixr 9 ^
 g ^ 0 = e
@@ -35,15 +40,18 @@ preserving xs =
     xs == map (<>e) xs
 
 inverts :: Group a => a -> a -> Bool
-inverts x y =
-    e == x <> y &&
-    e == y <> x
+inverts x y = inv x == y
 
 invertible :: Group a => [a] -> Bool
 invertible xs =
-    all (inverts <$> inv <*> id) xs
+    all (inverts' <$> inv <*> id) xs
     && 
     xs =~= map inv xs
+    where
+    inverts' x y =
+        e == x <> y &&
+        e == y <> x
+
 
 inverses :: Group a => [a] -> [[a]]
 inverses = normalize . map (\x -> normalize [x,inv x]) . delete e
@@ -62,6 +70,19 @@ close = until closed closure . normalize
 
 gen :: Group a => [a] -> [a]
 gen xs = close . (e:) $ xs ++ map inv xs
+
+gens :: Group a => [a] -> [a] -> Bool
+gens gs hs = gen hs =~= gs
+
+minGen :: Group a => [a] -> [a]
+minGen gs = head .
+    filter (gens gs) .
+    powerset' .
+    reverse $
+    delete e gs
+
+decompose :: Group a => [a] -> a -> [(Int,a)]
+decompose = undefined
 
 uniqueness :: Group a => [a] -> Bool
 uniqueness xs = length xs == length (normalize xs)
@@ -90,6 +111,7 @@ generators = filter <$> generates <*> id
 nonGenerators :: Group a => [a] -> [a]
 nonGenerators xs = filter (not . generates xs) xs
 
+--should be sorted by order??
 cycles :: Group a => [a] -> [[a]] 
 cycles =
     normalize .

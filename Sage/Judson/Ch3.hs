@@ -52,13 +52,13 @@ q35 = dump $ subgroups (dihedral 3)
 q36 = dump $ subgroups (dihedral 4)
 
 q45 = all isSubgroup .
-    mapp intersect . pairs $ subgroups (symmetric 3)
+    (map.map) intersect . pairs $ subgroups (symmetric 3)
 
 q46 = all isSubgroup .
-    mapp union . pairs $ subgroups (symmetric 3)
+    (map.map) union . pairs $ subgroups (symmetric 3)
 
 q47 = all isSubgroup .
-    mapp products . pairs $ subgroups (symmetric 3)
+    (map.map) products . pairs $ subgroups (symmetric 3)
 
 q52 = check (dihedral 3) (not.isAbelian) $
     all (not.isAbelian) . subgroups

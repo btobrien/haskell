@@ -10,6 +10,10 @@ import Data.Semigroup
 import Data.Monoid hiding ((<>))
 import Data.Group
 
+factorial :: Int -> Int
+factorial 0 = 1
+factorial n = n * factorial (n-1)
+
 type Cycle a = [a]
 
 showcycle :: Show a => Cycle a -> String
@@ -32,11 +36,17 @@ recycle f = filter ((>1).length) . unfold popcycle . sort . nub
 
 newtype Permutation a = P [Cycle a]; cyclesOf (P cs) = cs
 
+toPermutation :: Ord a => [a] -> Permutation a
+toPermutation = P . (recycle <$> permute <*> id)
+
 reduce :: Ord a => [Cycle a] -> Permutation a
 reduce = P . (recycle <$> through <*> concat)
 
-toPermutation :: Ord a => [a] -> Permutation a
-toPermutation = P . (recycle <$> permute <*> id)
+c :: Ord a => Cycle a -> Permutation a
+c = reduce . (:[])
+
+transposition :: Ord a => (a,a) -> Permutation a
+transposition (x,y) = c [x,y]
 
 permutations :: Ord a => [a] -> [Permutation a]
 permutations = map toPermutation . Data.List.permutations

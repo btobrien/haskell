@@ -4,7 +4,7 @@ module Utils where
 import Data.List
 import Control.Applicative
 import Control.Monad
-import Control.Parallel
+--import Control.Parallel
 import qualified Data.Set as Set
 import Data.Set (Set)
 
@@ -13,15 +13,34 @@ generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
 
 mapp = map . uncurry
 powerset = filterM (const [True,False])
+powerset' = filterM (const [False,True])
 pairs xs = (,) <$> xs <*> xs
 thruples xs = (,,) <$> xs <*> xs <*> xs
 also f x = (x, f x)
 ifhead :: ([a] -> b) -> [a] -> Maybe b
 ifhead f xs = if null xs then Nothing else Just (f xs)
 unfold = unfoldr . ifhead
-on process view x y = process (view x) (view y)
+on process view x y = process (view x) (view y); infixr 8 `on`
 over process (viewx,viewy) x y = process (viewx x) (viewy y)
+
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf n = unfoldr (\xs -> if null xs then Nothing else Just (take n xs, drop n xs))
+
+neighbors :: [a] -> [(a,a)]
 neighbors = zip <$> id <*> tail
+
+wrap :: [a] -> [a]
+wrap [] = []
+wrap (x:xs) = (x:xs) ++ [x]
+
+switch (x,y) = (y,x)
+
+replace :: Int -> a -> [a] -> [a]
+replace n x xs = take n xs ++ [x] ++ drop (n+1) xs
+
+squash :: (a -> Bool) -> a -> Maybe a
+squash isNothing x = if isNothing x then Nothing else Just x
+
 (.:) f g x y = f (g x y) 
 p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>
 p <||> p' = (||) <$> p <*> p'; infixl 1 <||>
@@ -36,7 +55,8 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 
 infixr 5 +|+
 (+|+) :: [a] -> [a] -> [a]
-xs +|+ ys = length ys `par` (xs ++ ys)
+--xs +|+ ys = length ys `par` (xs ++ ys)
+(+|+) = (++)
 
 (=~=) :: Ord a => [a] -> [a] -> Bool
 (=~=) = (==) `on` Set.fromList
@@ -55,14 +75,14 @@ choose n (x:xs) = map (x:) (choose (n-1) xs) ++ choose n xs
     
 pack :: Eq a => Int -> [[a]] -> [[a]]
 pack = map concat .: pack'
-	where
-	pack' n _ | n < 0 = []
-	pack' 0 _         = [[]]
-	pack' _ []        = []
-	pack' n (xs:xss)  = map (xs:) chosen ++ notChosen
-		where
-		chosen = pack' (n - length xs) (filter (null . intersect xs) xss)
-		notChosen = pack' n xss
+    where
+    pack' n _ | n < 0 = []
+    pack' 0 _         = [[]]
+    pack' _ []        = []
+    pack' n (xs:xss)  = map (xs:) chosen ++ notChosen
+        where
+        chosen = pack' (n - length xs) (filter (null . intersect xs) xss)
+        notChosen = pack' n xss
 
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
@@ -116,21 +136,21 @@ largestDivisor n = last . divisors $ n
 
 primes :: [Int]
 primes = sieve [2..]
-	where
-	sieve [] = []
-	sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
+    where
+    sieve [] = []
+    sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
 
 factor :: Int -> [Int]
 factor = unfoldr $ \n ->
     if n == 1
-	then Nothing
-	else let d = smallestDivisor n in Just (d, n `div` d)
+    then Nothing
+    else let d = smallestDivisor n in Just (d, n `div` d)
 
 isPrime :: Int -> Bool
 isPrime n = factor n == [n]
 
 check g assumption f =
-	if assumption g
-	then Just (f g)
-	else Nothing
+    if assumption g
+    then Just (f g)
+    else Nothing
 
