@@ -13,7 +13,7 @@ class (Monoid a, Ord a) => Group a where
     e :: a
     e = mempty
 
-(><) :: Semigroup a => a -> a -> a
+(><) :: Group a => a -> a -> a
 (><) = flip (<>)
 
 fold :: Group a => [a] -> a
@@ -68,11 +68,14 @@ closed xs = closure xs <~ (e : sort xs)
 close :: Group a => [a] -> [a]
 close = until closed closure . normalize 
 
+closedOrder :: Group a => [a] -> Int
+closedOrder xs = convergence . map length . iterate closure $ e : xs ++ map inv xs
+
 gen :: Group a => [a] -> [a]
 gen xs = close . (e:) $ xs ++ map inv xs
 
 gens :: Group a => [a] -> [a] -> Bool
-gens gs hs = gen hs =~= gs
+gens gs hs = closedOrder hs == length gs
 
 minGen :: Group a => [a] -> [a]
 minGen gs = head .

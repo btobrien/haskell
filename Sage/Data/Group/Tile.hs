@@ -15,8 +15,8 @@ type Tile = (Int,Int)
 -- assumed to be symmetric
 type Graph a = a -> [a]
 
-shuffle :: Ord a => [a] -> Permutation a
-shuffle = fold . map transposition . neighbors . drop 1
+run :: Ord a => [a] -> Permutation a
+run = fold . map transposition . neighbors . drop 1
 
 isClosedTrail :: Eq a => Graph a -> [a] -> Bool
 isClosedTrail next = all (\(x,y) -> x `elem` next y) . neighbors . wrap
@@ -24,14 +24,15 @@ isClosedTrail next = all (\(x,y) -> x `elem` next y) . neighbors . wrap
 closedTrails :: Ord a => Int -> a -> Graph a -> [[a]]
 closedTrails n start graph = trails n graph start start
 
+-- don't backtrack
 trails :: Ord a => Int -> Graph a -> a -> a -> [[a]]
 trails 0 _ target start = if start == target then [[]] else []
 trails n graph target start = concat $ map (map (start:) . trails (n - 1) graph target) (graph start)
 
 solve :: Ord a => Graph a -> a -> Permutation a -> Maybe [a]
 solve graph start x = listToMaybe $ do
-    n <- [0,2..]
-    filter (inverts x . shuffle) $ closedTrails n start graph
+    n <- [0,2..] -- pull higher
+    filter (inverts x . run) $ closedTrails n start graph
 
 tiles :: Tile -> Graph Tile
 tiles size = clean size . gen
@@ -46,11 +47,8 @@ tiles size = clean size . gen
         within n x = 0 <= x && x < n
         bothWithin (n,m) (x,y) = within n x && within m y
 
---
-start :: Tile
-start = (0,0)
-
-ts = tiles (2,3)
+solveTiles :: Ord a => Graph a -> a -> Permutation a -> Maybe [a]
+solveTiles graph start x = let xs = alternates x in fmap concat . sequence $ map (solve graph start) xs 
 
 showTile :: Tile -> String
 showTile (0,0) = '\x2554' : '\x2550' : [] 
@@ -65,8 +63,5 @@ showTile (2,2) = '\x2550' : '\x255d' : []
 
 showTiles :: [Tile] -> String
 showTiles = unlines . map concat . chunksOf 3 . map showTile
-
-initial :: [Tile]
-initial = map switch $ pairs [0..2]
 
 

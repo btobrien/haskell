@@ -41,6 +41,17 @@ replace n x xs = take n xs ++ [x] ++ drop (n+1) xs
 squash :: (a -> Bool) -> a -> Maybe a
 squash isNothing x = if isNothing x then Nothing else Just x
 
+takeUntil :: (a -> Bool) -> [a] -> [a]
+takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
+
+equal :: Eq a => (a,a) -> Bool
+equal = uncurry (==)
+
+scan f = scanl (flip f)
+
+convergence :: Eq a => [a] -> a
+convergence = fst . head . dropWhile (not.equal) . neighbors
+
 (.:) f g x y = f (g x y) 
 p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>
 p <||> p' = (||) <$> p <*> p'; infixl 1 <||>

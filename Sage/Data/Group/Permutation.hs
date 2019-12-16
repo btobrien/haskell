@@ -4,6 +4,7 @@ module Data.Group.Permutation where
 import Data.List hiding (cycle)
 import Control.Applicative
 import Prelude hiding (cycle)
+import Data.Maybe
 
 import Utils
 import Data.Semigroup
@@ -70,6 +71,14 @@ instance Ord a => Group (Permutation a) where
 apply :: Ord a => Permutation a -> a -> a
 apply = through . cyclesOf
 
+fromPermutation :: Ord a => Permutation a -> [a] -> [a]
+fromPermutation p = map (apply p)
+
+shuffle :: Ord a => Permutation Int -> [a] -> [a]
+shuffle p xs = sortOn (apply p . indexIn xs) $ xs
+	where
+	indexIn xs x = (+1) . fromJust $ elemIndex x xs
+
 elements :: Ord a => Permutation a -> [a]
 elements = sort . nub . concat . cyclesOf
 
@@ -88,5 +97,6 @@ even = Prelude.even . sum . map (length.tail) . cyclesOf
 alternating :: Int -> [Permutation Int]
 alternating = filter Data.Group.Permutation.even . symmetric
 
---generalize Int to Enum?
+alternates :: Ord a => Permutation a -> [Permutation a]
+alternates = map fold . chunksOf 2 . reverse . map transposition . transpositions
 

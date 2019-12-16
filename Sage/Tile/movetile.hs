@@ -9,6 +9,8 @@ import Data.List
 
 import Utils
 import Data.Group.Tile
+import Data.Group.Permutation
+import Data.HashTable (hashString)
 
 main = do
     hSetBuffering stdout NoBuffering
@@ -17,17 +19,27 @@ main = do
     str <- getContents
     mapM_ print . scanMoves initial $ str
 
+
+scanMoves :: [Tile] -> String -> [[Tile]]
+scanMoves = scan move
+
+a8 = alternating 8
+alternate c = let n = fromIntegral (hashString [c]) `mod` length a8 in a8 !! n
+
 move :: Char -> [Tile] -> [Tile]
 move 'i' = up
 move 'k' = down
 move 'l' = right
 move 'j' = left
-move _ = id
-
-scanMoves :: [Tile] -> String -> [[Tile]]
-scanMoves = scanl (flip move)
-
+move '0' = const initial
+move c = const $ shuffleAround center (alternate c) initial
+	
 center = (1,1)
+
+shuffleAround :: Ord a => a -> (Permutation Int) -> [a] -> [a]
+shuffleAround x pi xs = fromPermutation px xs
+	where
+	px = toPermutation . shuffle pi $ delete x xs
 
 up = slide id id
 down = slide (rotate 180) (rotate 180)
@@ -66,5 +78,9 @@ swapTopAt n (xs:ys:rest) =
     where
     x = xs !! n
     y = ys !! n
+
+
+initial :: [Tile]
+initial = map switch $ pairs [0..2]
 
 
