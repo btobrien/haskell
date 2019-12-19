@@ -38,6 +38,8 @@ switch (x,y) = (y,x)
 replace :: Int -> a -> [a] -> [a]
 replace n x xs = take n xs ++ [x] ++ drop (n+1) xs
 
+insertAt n x xs = take n xs ++ [x] ++ drop n xs
+
 squash :: (a -> Bool) -> a -> Maybe a
 squash isNothing x = if isNothing x then Nothing else Just x
 

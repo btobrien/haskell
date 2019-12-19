@@ -16,61 +16,56 @@ main = do
     hSetBuffering stdout NoBuffering
     hSetBuffering stdin NoBuffering
     hSetEcho stdin False
-    str <- getContents
-    mapM_ print . scanMoves initial $ str
+    dump . scan (move 3) (initial 3) =<< getContents
 
+alts 3 = alternating 8
+alts 4 = alternating 8
 
-scanMoves :: [Tile] -> String -> [[Tile]]
-scanMoves = scan move
+alternate size c = as !! index
+	where
+	as = alts size
+	index = fromIntegral (hashString [c]) `mod` length as
+	-- note: hashString is deprecated...
 
-a8 = alternating 8
-alternate c = let n = fromIntegral (hashString [c]) `mod` length a8 in a8 !! n
-
-move :: Char -> [Tile] -> [Tile]
-move 'i' = up
-move 'k' = down
-move 'l' = right
-move 'j' = left
-move '0' = const initial
-move c = const $ shuffleAround center (alternate c) initial
-	
 center = (1,1)
 
-shuffleAround :: Ord a => a -> (Permutation Int) -> [a] -> [a]
-shuffleAround x pi xs = fromPermutation px xs
-	where
-	px = toPermutation . shuffle pi $ delete x xs
-
-up = slide id id
-down = slide (rotate 180) (rotate 180)
-right = slide (rotate 90) (rotate 270)
-left = slide (rotate 270) (rotate 90)
+move :: Int -> Char -> [Tile] -> [Tile]
+move size 'i' = up size
+move size 'k' = down size
+move size 'l' = right size
+move size 'j' = left size
+move size '0' = const $ initial size
+move size c = const $ shuffleAround center (alternate size c) (initial size)
+	
+up size = slide size id id
+down size = slide size (rotate 180) (rotate 180)
+right size = slide size (rotate 90) (rotate 270)
+left size = slide size (rotate 270) (rotate 90)
 
 rotate 90 = reverse . transpose
 rotate 180 = map reverse . reverse
 rotate 270 = map reverse . transpose
 
-slide f f' = concat .
-    f' . moveDown . f .
-    chunksOf 3
+slide size f f' = concat .
+    f' . moveDown size . f .
+    chunksOf size
 
-moveDown :: [[Tile]] -> [[Tile]]
-moveDown (t:ts) =
-    if y == 2 then (t:ts)
-    else if y == 1 then t : swapTopAt x ts
-    else swapTopAt x (t:ts)
+moveDown :: Int -> [[Tile]] -> [[Tile]]
+moveDown size ts =
+	take y ts ++ swapTopAt x (drop y ts)
     where
-    (x,y) = location center (t:ts)
+    (x,y) = location size center ts
 
-location x xs = 
-    toTile .
+location size x xs = 
+    toTile size .
     fromJust .
     elemIndex x $ concat xs
 
-toTile :: Int -> Tile
-toTile x = switch (quotRem x 3)
+toTile :: Int -> Int -> Tile
+toTile size x = switch (quotRem x size)
 
 swapTopAt :: Int -> [[a]] -> [[a]] 
+swapTopAt _ (xs:[]) = [xs]
 swapTopAt n (xs:ys:rest) =
     replace n y xs :
     replace n x ys :
@@ -79,8 +74,7 @@ swapTopAt n (xs:ys:rest) =
     x = xs !! n
     y = ys !! n
 
-
-initial :: [Tile]
-initial = map switch $ pairs [0..2]
+initial :: Int -> [Tile]
+initial n = map switch $ pairs [0..(n-1)]
 
 
