@@ -10,7 +10,7 @@ import Data.List
 import Utils
 import Data.Group.Tile
 import Data.Group.Permutation
-import Data.HashTable (hashString)
+import Data.Hashable (hash)
 
 main = do
     hSetBuffering stdout NoBuffering
@@ -22,10 +22,9 @@ alts 3 = alternating 8
 alts 4 = alternating 8
 
 alternate size c = as !! index
-	where
-	as = alts size
-	index = fromIntegral (hashString [c]) `mod` length as
-	-- note: hashString is deprecated...
+    where
+    as = alts size
+    index = fromIntegral (hash [c]) `mod` length as
 
 center = (1,1)
 
@@ -36,7 +35,7 @@ move size 'l' = right size
 move size 'j' = left size
 move size '0' = const $ initial size
 move size c = const $ shuffleAround center (alternate size c) (initial size)
-	
+    
 up size = slide size id id
 down size = slide size (rotate 180) (rotate 180)
 right size = slide size (rotate 90) (rotate 270)
@@ -52,7 +51,7 @@ slide size f f' = concat .
 
 moveDown :: Int -> [[Tile]] -> [[Tile]]
 moveDown size ts =
-	take y ts ++ swapTopAt x (drop y ts)
+    take y ts ++ swapTopAt x (drop y ts)
     where
     (x,y) = location size center ts
 
