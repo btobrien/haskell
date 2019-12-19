@@ -12,6 +12,9 @@ import Data.Group.Tile
 import Data.Group.Permutation
 import Data.HashTable (hashString)
 
+type Board = ((Int,Tile), [[Tiles]])
+size = (fst.fst); center = (fst.snd); tiles = snd 
+
 main = do
     hSetBuffering stdout NoBuffering
     hSetBuffering stdin NoBuffering
@@ -29,13 +32,14 @@ alternate size c = as !! index
 
 center = (1,1)
 
-move :: Int -> Char -> [Tile] -> [Tile]
-move size 'i' = up size
-move size 'k' = down size
-move size 'l' = right size
-move size 'j' = left size
-move size '0' = const $ initial size
-move size c = const $ shuffleAround center (alternate size c) (initial size)
+move :: Char -> Board -> Board
+move 'i' = up size
+move 'k' = down size
+move 'l' = right size
+move 'j' = left size
+move '0' = const $ initial size
+move c = \board -> let n = size board in
+	shuffleAround (center board) (alternate n c) (initial n)
 	
 up size = slide size id id
 down size = slide size (rotate 180) (rotate 180)
@@ -46,20 +50,18 @@ rotate 90 = reverse . transpose
 rotate 180 = map reverse . reverse
 rotate 270 = map reverse . transpose
 
-slide size f f' = concat .
-    f' . moveDown size . f .
-    chunksOf size
+slide size f f' = f' . moveDown size . f .
 
-moveDown :: Int -> [[Tile]] -> [[Tile]]
-moveDown size ts =
+moveDown :: Int -> Board -> Board
+moveDown ts =
 	take y ts ++ swapTopAt x (drop y ts)
     where
-    (x,y) = location size center ts
+    (x,y) = location (center board) board
 
-location size x xs = 
-    toTile size .
+location x board = 
+    toTile (size board) .
     fromJust .
-    elemIndex x $ concat xs
+    elemIndex x $ concat (tiles board)
 
 toTile :: Int -> Int -> Tile
 toTile size x = switch (quotRem x size)
@@ -75,6 +77,6 @@ swapTopAt n (xs:ys:rest) =
     y = ys !! n
 
 initial :: Int -> [Tile]
-initial n = map switch $ pairs [0..(n-1)]
+initial n = chunksOf n . map switch $ pairs [0..(n-1)]
 
 
