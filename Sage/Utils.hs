@@ -126,8 +126,8 @@ groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
 groupOn = groupBy.((==)`on`)
 
 -- we have more efficient impls of these
-sortOn :: Ord b => (a -> b) -> [a] -> [a]
-sortOn = sortBy . (compare `on`)
+sortOn' :: Ord b => (a -> b) -> [a] -> [a]
+sortOn' = sortBy . (compare `on`)
 
 -- create separate prime module?
 

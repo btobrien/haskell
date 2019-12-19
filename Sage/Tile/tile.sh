@@ -3,4 +3,4 @@
 
 set -o pipefail
 echo
-movetile | coat showtile
+movetile $1 | coat showtile

@@ -34,8 +34,8 @@ solve graph start x = listToMaybe $ do
     n <- [0,2..] -- pull higher
     filter (inverts x . run) $ closedTrails n start graph
 
-tiles :: Tile -> Graph Tile
-tiles size = clean size . gen
+tileGraph :: Tile -> Graph Tile
+tileGraph size = clean size . gen
     where
     gen (x,y) = [
         (x+1,y),

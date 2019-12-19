@@ -75,15 +75,15 @@ fromPermutation :: Ord a => Permutation a -> ([a] -> [a])
 fromPermutation p = map (apply p)
 
 shuffle :: Ord a => Permutation Int -> [a] -> [a]
-shuffle p xs = sortOn (apply p . indexIn xs) $ xs
-	where
-	indexIn xs x = (+1) . fromJust $ elemIndex x xs
+shuffle p xs = sortOn' (apply p . indexIn xs) $ xs
+    where
+    indexIn xs x = (+1) . fromJust $ elemIndex x xs
 
 shuffleAround :: Ord a => a -> (Permutation Int) -> [a] -> [a]
 shuffleAround x pi xs = insertAt n x xs'
-	where
-	xs' = shuffle pi $ delete x xs
-	n = fromJust $ x `elemIndex` xs
+    where
+    xs' = shuffle pi $ delete x xs
+    n = fromJust $ x `elemIndex` xs
 
 elements :: Ord a => Permutation a -> [a]
 elements = sort . nub . concat . cyclesOf
