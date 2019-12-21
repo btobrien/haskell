@@ -7,6 +7,12 @@ install :
 coat :
 	cp coat.sh ~/bin/coat
 
+plus :
+	cp plus.sh ~/bin/+
+
+flip :
+	cp flip.sh ~/bin/flip
+
 top :
 	make_top coat
 
