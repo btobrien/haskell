@@ -29,11 +29,27 @@ chunksOf n = unfoldr (\xs -> if null xs then Nothing else Just (take n xs, drop 
 neighbors :: [a] -> [(a,a)]
 neighbors = zip <$> id <*> tail
 
+equal :: Eq a => (a,a) -> Bool
+equal = uncurry (==)
+
+sorted :: Ord a => [a] -> Bool
+sorted = all (uncurry (<=)) . neighbors
+
 wrap :: [a] -> [a]
 wrap [] = []
 wrap (x:xs) = (x:xs) ++ [x]
 
-switch (x,y) = (y,x)
+rotate :: Int -> [a] -> [a]
+rotate _ [] = []
+rotate n xs = let m = n `mod` length xs in drop m xs ++ take m xs
+
+rotate' :: Int -> [[a]] -> [[a]]
+rotate' 0 = id
+rotate' 90 = reverse . transpose
+rotate' 180 = map reverse . reverse
+rotate' 270 = map reverse . transpose
+
+swap (x,y) = (y,x)
 
 replace :: Int -> a -> [a] -> [a]
 replace n x xs = take n xs ++ [x] ++ drop (n+1) xs
@@ -45,9 +61,6 @@ squash isNothing x = if isNothing x then Nothing else Just x
 
 takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
-
-equal :: Eq a => (a,a) -> Bool
-equal = uncurry (==)
 
 scan f = scanl (flip f)
 

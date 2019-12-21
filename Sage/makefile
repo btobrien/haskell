@@ -1,5 +1,5 @@
 
-all : dihsubs movetile showtile tile
+all : dihsubs movetile showtile tile top
 
 movetile:
 	ghc -O2 -o ~/bin/movetile Tile/movetile.hs
@@ -16,3 +16,6 @@ dihsubs:
 clean:
 	find . -name '*.hi' -delete
 	find . -name '*.o' -delete
+
+top : top
+	make_top coat

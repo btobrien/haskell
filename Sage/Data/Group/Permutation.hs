@@ -10,6 +10,7 @@ import Utils
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
 import Data.Group
+import Data.Hashable (hash)
 
 factorial :: Int -> Int
 factorial 0 = 1
@@ -97,12 +98,26 @@ symmetric n = Data.Group.Permutation.permutations [1..n]
 transpositions :: Ord a => Permutation a -> [(a,a)]
 transpositions = concat . map neighbors . cyclesOf
 
-even :: Ord a => Permutation a -> Bool
-even = Prelude.even . sum . map (length.tail) . cyclesOf
+alternate :: Ord a => Permutation a -> Bool
+alternate = Prelude.even . sum . map (length.tail) . cyclesOf
 
 alternating :: Int -> [Permutation Int]
-alternating = filter Data.Group.Permutation.even . symmetric
+alternating = filter Data.Group.Permutation.alternate . symmetric
 
-alternates :: Ord a => Permutation a -> [Permutation a]
-alternates = map fold . chunksOf 2 . reverse . map transposition . transpositions
+--alternates :: Ord a => Permutation a -> [Permutation a]
+--alternates = map fold . chunksOf 2 . reverse . map transposition . transpositions
+
+mash :: Eq a => Int -> [a] -> [a]
+mash n = unfoldr $ \xs ->
+    if null xs then Nothing
+    else let xs' = rotate n xs in Just (head xs' , mash (hash . show $ n) (tail xs'))
+
+selectPermutation :: Ord a => Int -> [a] -> Permutation a
+selectPermutation = toPermutation .: mash
+
+selectEvenPermutation :: Ord a => Int -> [a] -> Permutation a
+selectEvenPermutation n xs = head [ a | m <- [n..], let a = selectPermutation m xs, alternate a]
+
+
+
 
