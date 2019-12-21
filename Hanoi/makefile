@@ -1,5 +1,5 @@
 
-all : hanoi toi textnoi shownoi coat clean
+all : hanoi toi textnoi shownoi clean
 
 centos : all 
 	cp hanoi_centos.sh ~/bin/hanoi
@@ -16,9 +16,9 @@ textnoi:
 shownoi:
 	ghc -o ~/bin/shownoi shownoi.hs
 
-coat:
-	cp coat.sh ~/bin/coat
-
 clean:
 	find . -name '**/.hi' -delete
 	find . -name '**/.o' -delete
+
+top :
+	make_top coat
