@@ -2,13 +2,13 @@
 all : dihsubs movetile showtile tile top
 
 movetile:
-	ghc -O2 -o ~/bin/movetile Tile/movetile.hs
+	ghc -O2 -o ~/bin/movetile Data/Group/Tile/movetile.hs
 
 showtile:
-	ghc -O2 -o ~/bin/showtile Tile/showtile.hs
+	ghc -O2 -o ~/bin/showtile Data/Group/Tile/showtile.hs
 
 tile : movetile showtile
-	cp Tile/tile.sh ~/bin/tile
+	cp Data/Group/Tile/tile.sh ~/bin/tile
 
 dihsubs:
 	ghc -threaded -rtsopts -O2 -o ~/bin/dihsubs main/dihsubs.hs

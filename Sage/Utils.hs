@@ -7,6 +7,7 @@ import Control.Monad
 --import Control.Parallel
 import qualified Data.Set as Set
 import Data.Set (Set)
+import Control.Monad.State
 
 generate :: Eq a => (a -> a) -> a -> [a]
 generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
@@ -70,7 +71,8 @@ convergence = fst . head . dropWhile (not.equal) . neighbors
 (.:) f g x y = f (g x y) 
 p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>
 p <||> p' = (||) <$> p <*> p'; infixl 1 <||>
-p <++> p' = (++) <$> p <*> p'; infixl 1 <++>
+p <++> p' = (++) <$> p <*> p'; infixl 2 <++>
+p <:> p' = (:) <$> p <*> p'; infixl 2 <:>
 p <==> p' = (==) <$> p <*> p'
 p +> p' = (++) <$> p <*> p'; infixl 1 +>
 p <+ p' = (++) <$> p <*> const p'; infixl 1 <+
@@ -142,7 +144,17 @@ groupOn = groupBy.((==)`on`)
 sortOn' :: Ord b => (a -> b) -> [a] -> [a]
 sortOn' = sortBy . (compare `on`)
 
+-- we have more efficient impls of these
+selectOn :: Ord b => (a -> b) -> [a] -> a
+selectOn = head .: sortOn'
+
 -- create separate prime module?
+
+difference :: (Int,Int) -> (Int,Int) -> (Int,Int)
+difference (x,y) (x',y') = (x - x', y - y')  
+
+shift :: (Int,Int) -> (Int,Int) -> (Int,Int)
+shift (x,y) (x',y') = (x + x', y + y')  
 
 divisibleBy :: Int -> Int -> Bool
 divisibleBy x = (==0) . (`mod`x)

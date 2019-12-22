@@ -13,43 +13,60 @@ import Data.Group.Permutation
 
 type Tile = (Int,Int)
 
-data Board = Board { size :: Int, tiles :: [[Tile]] }
+type Board = [[Tile]]
+width = length . head
+height = length
+size = (,) <$> width <*> height
 
-withTiles board ts = board { tiles = ts }
-modify f board = board { tiles = f (tiles board) }
+cursor :: Tile
+cursor = (0,0)
 
-start :: Tile
-start = (0,0)
+toTile :: (Int,Int) -> Int -> Tile
+toTile (w,_) i = swap . quotRem i $ w
 
-toTile :: Int -> Int -> Tile
-toTile size x = swap (quotRem x size)
+correctAt :: Board -> Tile -> Bool
+correctAt board x = location x board == x
+
+-- could just compare with solution...
+solved :: Board -> Bool
+solved board = all (correctAt board) . concat $ board
+
+corner :: Board -> Tile
+corner = (\(x,y) -> (x-1,y-1)) . size
 
 location x board = 
     toTile (size board) .
-    fromJust .  elemIndex x $ concat (tiles board)
+    fromJust . elemIndex x .
+    concat $ board
 
-solution :: Int -> Board
-solution n = Board n (chunksOf n . map swap $ pairs [0..(n-1)])
+count :: Board -> Int
+count = uncurry (*) . size
+
+solution :: (Int,Int) -> Board
+solution (w,h) = chunksOf w $
+    [toTile (w,h) t | t <- [0..(w*h-1)]]
 
 shuffleBoard :: Char -> Board -> Board
-shuffleBoard c board = board `withTiles` shuffledTiles
+shuffleBoard c board = shuffledTiles
     where
-    n = size board
+    selectLevel board n = selectEvenPermutation n [1..(count board - 1)]
     shuffledTiles =
-        chunksOf n .
-        shuffleAround start (selectEvenPermutation (hash [c]) [1..(n*n - 1)]) .
-        concat . tiles $ solution n
+        chunksOf (width board) .
+        shuffleAround cursor (selectLevel board . hash $ [c]) .
+        concat $ board
+
+configure :: Char -> (Int,Int) -> Board
+configure c = shuffleBoard c . solution
 
 up = moveDown
-down = modify (rotate' 180) . moveDown . modify (rotate' 180)
-left = modify (rotate' 90) . moveDown . modify (rotate' 270)
-right = modify (rotate' 270) . moveDown .  modify (rotate' 90)
+down = (rotate' 180) . moveDown . (rotate' 180)
+left = (rotate' 90) . moveDown . (rotate' 270)
+right = (rotate' 270) . moveDown .  (rotate' 90)
 
 moveDown :: Board -> Board
-moveDown board = let ts = tiles board in
-    board `withTiles` (take y ts ++ swapTopAt x (drop y ts))
+moveDown ts = take y ts ++ swapTopAt x (drop y ts)
     where
-    (x,y) = location start board
+    (x,y) = location cursor ts
 
 swapTopAt :: Int -> [[a]] -> [[a]] 
 swapTopAt _ (xs:[]) = [xs]
