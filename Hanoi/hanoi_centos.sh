@@ -1,6 +1,9 @@
 #!/bin/bash
 
 config=$HOME/.config/hanoi
+
+export PATH=$config:$PATH
+
 mkdir -p $config/scores/
 
 size=${1:-5}

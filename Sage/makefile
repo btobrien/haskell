@@ -1,16 +1,14 @@
 
-all : dihsubs movetile showtile tile
+all : tile dihsubs clean
 
-movetile:
-	ghc -O2 -o ~/bin/movetile Data/Group/Tile/movetile.hs
-
-showtile:
-	ghc -O2 -o ~/bin/showtile Data/Group/Tile/showtile.hs
-
-tile : movetile showtile
+tile :
+	mkdir -p ~/bin && mkdir -p ~/.config/tile
+	cp ~/bin/coat ~/.config/tile/coat
+	ghc -O2 -o ~/.config/tile/move Data/Group/Tile/move.hs
+	ghc -O2 -o ~/.config/tile/show Data/Group/Tile/show.hs
 	cp Data/Group/Tile/tile.sh ~/bin/tile
 
-dihsubs:
+dihsubs :
 	ghc -threaded -rtsopts -O2 -o ~/bin/dihsubs main/dihsubs.hs
 
 clean:

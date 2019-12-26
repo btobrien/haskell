@@ -1,4 +1,7 @@
 #!/bin/bash
 
+config=$HOME/.config/hanoi
+PATH=$config:$PATH
+
 set -o pipefail
-textnoi $1 | coat shownoi
+move $@ | coat show

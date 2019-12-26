@@ -1,11 +1,6 @@
 
-all : install coat tile
-
-top :
-	cp ./make_top.sh ~/bin/make_top
-
-tile : coat 
-	cd ../Sage; make
+clone : 
+	cp clone.sh ~/bin/clone
 
 coat :
 	cp coat.sh ~/bin/coat
