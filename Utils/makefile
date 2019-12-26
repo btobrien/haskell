@@ -1,8 +1,11 @@
 
-all : install coat
+all : install coat tile
 
-install :
+top :
 	cp ./make_top.sh ~/bin/make_top
+
+tile : coat 
+	cd ../Sage; make
 
 coat :
 	cp coat.sh ~/bin/coat
@@ -12,7 +15,4 @@ plus :
 
 flip :
 	cp flip.sh ~/bin/flip
-
-top :
-	make_top coat
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-clear
+#clear
 painter=$1
 
 tput civis
