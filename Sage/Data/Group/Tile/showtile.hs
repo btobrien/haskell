@@ -5,5 +5,5 @@ import Utils
 
 import Data.Group.Tile
 
-main = mapM_ putStr . map (showTiles . read) . lines =<< getContents
+main = mapM_ putStr . map (showBoard . read) . lines =<< getContents
 

@@ -18,8 +18,8 @@ main = do
     hSetBuffering stdout NoBuffering
     hSetBuffering stdin NoBuffering
     hSetEcho stdin False
-    n <- read . fromMaybe "3" . listToMaybe <$> getArgs
-    dump . map concat . scan control (initial (n,n)) =<< getContents
+    start <- initial . (\n -> (n,n)) . read . fromMaybe "3" . listToMaybe <$> getArgs
+    dump . scan control start =<< getContents
 
 control :: Char -> Board -> Board
 control 'i' = up
@@ -30,4 +30,4 @@ control 'h' = \board -> fromMaybe id (slide <$> hint board) board
 control '0' = initial . size
 control c | isLower c = id
 control c | isUpper c = shuffleBoard c
-control c = configure c . size
+control c = initialize c . size

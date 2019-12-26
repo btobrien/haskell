@@ -63,7 +63,7 @@ squash isNothing x = if isNothing x then Nothing else Just x
 takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
 
-scan f = scanl (flip f)
+scan = scanl . flip
 
 convergence :: Eq a => [a] -> a
 convergence = fst . head . dropWhile (not.equal) . neighbors
@@ -73,7 +73,7 @@ p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>
 p <||> p' = (||) <$> p <*> p'; infixl 1 <||>
 p <++> p' = (++) <$> p <*> p'; infixl 2 <++>
 p <:> p' = (:) <$> p <*> p'; infixl 2 <:>
-p <==> p' = (==) <$> p <*> p'
+p <==> p' = (==) <$> p <*> p'; infixl 2 <==>
 p +> p' = (++) <$> p <*> p'; infixl 1 +>
 p <+ p' = (++) <$> p <*> const p'; infixl 1 <+
 p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>

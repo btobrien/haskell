@@ -1,7 +1,7 @@
 
 module Data.Group.Dihedral where
 
-import Utils
+import Utils hiding (rotate)
 import Data.Group
 import Data.Semigroup
 import Data.Monoid hiding ((<>))

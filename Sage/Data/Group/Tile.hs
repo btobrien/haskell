@@ -10,7 +10,6 @@ import Utils
 import Data.Group.Permutation
 
 type Tile = (Int,Int)
-
 type Board = [[Tile]]
 width = length . head
 height = length
@@ -19,21 +18,20 @@ size = (,) <$> width <*> height
 cursor :: Tile
 cursor = (0,0)
 
-toTile :: (Int,Int) -> Int -> Tile
-toTile (w,_) i = swap . quotRem i $ w
+toTile :: Int -> Int -> Tile
+toTile w i = swap . quotRem i $ w
 
 correctAt :: Board -> Tile -> Bool
 correctAt board x = location x board == x
 
--- could just compare with solution...
 solved :: Board -> Bool
-solved board = all (correctAt board) . concat $ board
+solved = initial . size <==> id
 
 corner :: Board -> Tile
 corner = (\(x,y) -> (x-1,y-1)) . size
 
 location x board = 
-    toTile (size board) .
+    toTile (width board) .
     fromJust . elemIndex x .
     concat $ board
 
@@ -41,8 +39,7 @@ count :: Board -> Int
 count = uncurry (*) . size
 
 initial :: (Int,Int) -> Board
-initial (w,h) = chunksOf w $
-    [toTile (w,h) t | t <- [0..(w*h-1)]]
+initial (w,h) = chunksOf w [toTile w t | t <- [0..(w*h-1)]]
 
 shuffleBoard :: Char -> Board -> Board
 shuffleBoard c board = shuffledTiles
@@ -53,18 +50,18 @@ shuffleBoard c board = shuffledTiles
         shuffleAround cursor (selectLevel board . hash $ [c]) .
         concat $ board
 
-configure :: Char -> (Int,Int) -> Board
-configure c = shuffleBoard c . initial
+initialize :: Char -> (Int,Int) -> Board
+initialize c = shuffleBoard c . initial
 
-up = moveDown
-down = (rotate' 180) . moveDown . (rotate' 180)
-left = (rotate' 90) . moveDown . (rotate' 270)
-right = (rotate' 270) . moveDown .  (rotate' 90)
+up = slideUp
+down = (rotate' 180) . slideUp . (rotate' 180)
+left = (rotate' 90) . slideUp . (rotate' 270)
+right = (rotate' 270) . slideUp .  (rotate' 90)
 
-moveDown :: Board -> Board
-moveDown ts = take y ts ++ swapTopAt x (drop y ts)
-    where
-    (x,y) = location cursor ts
+slideUp :: Board -> Board
+slideUp board =
+	let (x,y) = location cursor board
+	in take y board ++ swapTopAt x (drop y board)
 
 swapTopAt :: Int -> [[a]] -> [[a]] 
 swapTopAt _ (xs:[]) = [xs]
@@ -73,9 +70,8 @@ swapTopAt n (xs:ys:rest) =
     replace n (xs !! n) ys :
     rest
 
-showTiles :: [Tile] -> String
-showTiles ts = let n =  floor . sqrt . fromIntegral . length $ ts in
-    unlines . map concat . chunksOf n . map (showTile n) $ ts
+showBoard :: [[Tile]] -> String
+showBoard board = unlines . map concat . (map . map) (showTile . width $ board) $ board
 
 showTile :: Int -> Tile -> String
 

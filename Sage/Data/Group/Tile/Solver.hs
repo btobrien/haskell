@@ -32,6 +32,7 @@ inverse R = L
 areInverses :: (Move,Move) -> Bool
 areInverses = equal . fmap inverse
 
+reduce :: [Move] -> [Move]
 reduce = until reduced reduce'
     where
     reduce' [] = []
@@ -100,7 +101,6 @@ approach x = get >>= \board ->
         then adjust <:> approach x
         else mapM move (align ++ reach)
 
--- assumes it was approached from above
 escort :: Tile -> State Board [Move]
 escort x = get >>= \board ->
     let
