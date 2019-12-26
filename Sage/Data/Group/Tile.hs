@@ -9,8 +9,6 @@ import Data.Hashable (hash)
 import Utils
 import Data.Group.Permutation
 
---post-process solution reduction
-
 type Tile = (Int,Int)
 
 type Board = [[Tile]]
@@ -42,8 +40,8 @@ location x board =
 count :: Board -> Int
 count = uncurry (*) . size
 
-solution :: (Int,Int) -> Board
-solution (w,h) = chunksOf w $
+initial :: (Int,Int) -> Board
+initial (w,h) = chunksOf w $
     [toTile (w,h) t | t <- [0..(w*h-1)]]
 
 shuffleBoard :: Char -> Board -> Board
@@ -56,7 +54,7 @@ shuffleBoard c board = shuffledTiles
         concat $ board
 
 configure :: Char -> (Int,Int) -> Board
-configure c = shuffleBoard c . solution
+configure c = shuffleBoard c . initial
 
 up = moveDown
 down = (rotate' 180) . moveDown . (rotate' 180)

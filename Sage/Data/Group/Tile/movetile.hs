@@ -7,9 +7,11 @@ import System.Exit
 import Control.Monad
 import Data.List
 import Data.Char
+import Data.Maybe
 
 import Utils
 import Data.Group.Tile
+import Data.Group.Tile.Solver
 import Data.Group.Permutation
 
 main = do
@@ -17,14 +19,15 @@ main = do
     hSetBuffering stdin NoBuffering
     hSetEcho stdin False
     n <- read . fromMaybe "3" . listToMaybe <$> getArgs
-    dump . map concat . scan move (solution (n,n)) =<< getContents
+    dump . map concat . scan control (initial (n,n)) =<< getContents
 
-move :: Char -> Board -> Board
-move 'i' = up
-move 'k' = down
-move 'l' = right
-move 'j' = left
-move '0' = \board -> solution (size board)
-move c | isLower c = id
-move c | isUpper c = shuffleBoard c
-move c = configure c . size
+control :: Char -> Board -> Board
+control 'i' = up
+control 'k' = down
+control 'l' = right
+control 'j' = left
+control 'h' = \board -> fromMaybe id (slide <$> hint board) board
+control '0' = initial . size
+control c | isLower c = id
+control c | isUpper c = shuffleBoard c
+control c = configure c . size

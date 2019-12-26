@@ -2,6 +2,7 @@
 module Data.Group.Tile.Solver where 
 
 import Data.List
+import Data.Maybe
 import Control.Applicative
 import Control.Monad.State.Lazy
 
@@ -22,14 +23,43 @@ reflected L = U
 reflected D = R
 reflected R = D
 
+inverse :: Move -> Move
+inverse U = D
+inverse D = U
+inverse L = R
+inverse R = L
+
+areInverses :: (Move,Move) -> Bool
+areInverses = equal . fmap inverse
+
+reduce = until reduced reduce'
+    where
+    reduce' [] = []
+    reduce' [x] = [x]
+    reduce' (x:y:zs) = if areInverses (x,y)
+        then reduce zs
+        else x : reduce (y:zs)
+
+reduced :: [Move] -> Bool
+reduced = all (not . areInverses) . neighbors
+
 reflect :: Board -> Board
-reflect = transpose . (map.map) swap
+reflect = transpose . (map . map) swap
 
 shouldReflect :: Board -> Bool
 shouldReflect = (>) <$> width <*> height
 
 done :: Board -> Bool
 done = ((2,2)==) . size
+
+trim :: Board -> Board
+trim = init
+
+hint :: Board -> Maybe Move
+hint = listToMaybe . solution
+
+solution :: Board -> [Move]
+solution = reduce . evalState solve
 
 solve :: State Board [Move]
 solve = get >>= \board ->
@@ -38,7 +68,7 @@ solve = get >>= \board ->
     else if shouldReflect board then
         map reflected <$> (modify reflect >> solve)
     else
-        solveEdge <++> (modify init >> solve)
+        solveEdge <++> (modify trim >> solve)
     
 solveEdge :: State Board [Move]
 solveEdge = gets corner >>= solveEdges
@@ -68,27 +98,34 @@ approach x = get >>= \board ->
     in
     if u == 0 || snd c == height board - 1
         then adjust <:> approach x
-        else mapM move (align++reach)
+        else mapM move (align ++ reach)
 
--- assumes to start from above
+-- assumes it was approached from above
 escort :: Tile -> State Board [Move]
 escort x = get >>= \board ->
-    let (v,u) = difference x (location x board)
+    let
+    (v,u) = difference x (location x board)
+    step =
+        if v == 0 then fall x
+        else if u == 1 && v < 0 then swoop
+        else if u == 0 then sweep
+        else if v < 0 then zig else zag
     in
     if (v,u) == (0,0) then return []
     else if fst x == 0 && (v,u) == (0,1) then wax
-    else if v == 0 then (if fst x == 0 then fade else fall) <++> escort x
-    else if u == 1 && v < 0 then swoop <++> escort x
-    else if u == 0 then sweep <++> escort x
-    else zigzag v <++> escort x
+    else step <++> escort x
     
+move :: Move -> State Board Move
+move m = modify (slide m) >> return m
+
 wax :: State Board [Move]
 wax = mapM move [L,U,R,D,L,U,R,U,L,D,D,R,U,L,U,R,D]
 
-zigzag :: Int -> State Board [Move]
-zigzag v = if v < 0
-    then mapM move [R,U,L,U,R,D]
-    else mapM move [L,U,R,U,L,D]
+zig :: State Board [Move]
+zig = mapM move [R,U,L,U,R,D]
+    
+zag :: State Board [Move]
+zag = mapM move [L,U,R,U,L,D]
 
 sweep :: State Board [Move]
 sweep = mapM move [L,U,R,D,L]
@@ -96,13 +133,8 @@ sweep = mapM move [L,U,R,D,L]
 swoop :: State Board [Move]
 swoop = mapM move [R,U,L,D,R] 
 
-fall :: State Board [Move]
-fall = mapM move [R,U,U,L,D]
-
-fade :: State Board [Move]
-fade = mapM move [L,U,U,R,D]
-
-move :: Move -> State Board Move
-move m = modify (slide m) >> return m
-
+fall :: Tile -> State Board [Move]
+fall x = if fst x == 0
+    then mapM move [L,U,U,R,D] 
+    else mapM move [R,U,U,L,D]
 
