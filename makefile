@@ -3,11 +3,13 @@ all : tile coat
 
 clone :
 	make clone -C Utils
-coat :
-	make coat -C Utils
 
 tile : coat 
 	make tile -C Sage
 
-hanoi :
+hanoi : coat
 	make hanoi -C Hanoi
+
+coat :
+	make coat -C Utils
+
