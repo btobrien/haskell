@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 app=$1
 user_host=$2
 
@@ -14,9 +16,10 @@ else
     user=$(whoami)
 fi
 
+echo $app
 scp $0 $user_host:/home/$user/bin/$(basename $0)
-scp ~/bin/$app $user_host:/home/$user/bin/$(basename $app)
+scp ~/bin/$app $user_host:/home/$user/bin/$app
 
-find -type d -name ~/.config/$app 2>/dev/null || exit
+ls ~/.config/$app &>/dev/null || exit
 
-scp -pr ~/.config/$app $user_host:/home/$user/.config/$(basename $app)
+scp -pr ~/.config/$app $user_host:/home/$user/.config/
