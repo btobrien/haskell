@@ -1,14 +1,16 @@
 #!/bin/bash
 
-#clear
 painter=$1
 
 tput civis
 trap "tput cnorm" EXIT
 
-tput sc
+read line
+$painter <<< "$line"
+height=$($painter <<< "$line" | wc -l)
+
 while read line; do
-    tput rc
-    tput sc
-    $painter <<<"$line"
+    tput cuu $height
+    tput el1
+    $painter <<< "$line"
 done
