@@ -60,8 +60,8 @@ right = (rotate' 270) . slideUp .  (rotate' 90)
 
 slideUp :: Board -> Board
 slideUp board =
-	let (x,y) = location cursor board
-	in take y board ++ swapTopAt x (drop y board)
+    let (x,y) = location cursor board
+    in take y board ++ swapTopAt x (drop y board)
 
 swapTopAt :: Int -> [[a]] -> [[a]] 
 swapTopAt _ (xs:[]) = [xs]
@@ -102,4 +102,7 @@ showTile 4 (0,3) = '\x255a' : '\x2550' : []
 showTile 4 (1,3) = '\x2569' : '\x2550' : [] 
 showTile 4 (2,3) = '\x2569' : '\x2569' : [] 
 showTile 4 (3,3) = '\x2550' : '\x255d' : [] 
+
+showTile n (0,0) = "*  "
+showTile n (x,y) = take 3 $ show (x + n * y) ++ "  "
 
