@@ -7,6 +7,9 @@ hanoi:
 	cp toi.sh ~/.config/hanoi/toi
 	cp hanoi.sh ~/bin/hanoi
 
+soi :
+	ghc -o ~/bin/soi Solve.hs
+
 centos : hanoi
 	cp hanoi_centos.sh ~/bin/hanoi
 
