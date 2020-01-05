@@ -1,5 +1,5 @@
 
-hanoi:
+hanoi: soi hang
 	mkdir -p ~/bin && mkdir -p ~/.config/hanoi
 	cp ~/bin/coat ~/.config/hanoi/
 	ghc -o ~/.config/hanoi/show show.hs
@@ -9,6 +9,9 @@ hanoi:
 
 soi :
 	ghc -o ~/bin/soi Solve.hs
+
+hang :
+	ghc -o ~/bin/hang Hang.hs
 
 centos : hanoi
 	cp hanoi_centos.sh ~/bin/hanoi

@@ -14,28 +14,38 @@ if ! [[ -t 0 ]]; then
     isbot=true
 fi
 
-if [ "$player" == '' ]; then
-    echo 'error: empty player name' >&2
-    exit 1
+if [ "$player" == 'solve' ]; then
+    soi $size | hanoi $size bot
+    exit 0
+fi
+
+if [ "$player" == 'solution' ]; then
+    echo
+    soi $size | sed 's/../& /g' | tr ' ' '\n' | hang
+    echo
+    exit 0
 fi
 
 /usr/bin/time toi $size 2>$config/last 
+
+[ "$player" != '' ] || exit 0
 
 [ "$?" == 0 ] || exit 4
 
 echo
 score=$(awk '{ print $1 }' <$config/last)
 echo $score
-echo
 
-if $isbot; then
-    echo "nice job!"
-    echo "too bad you're a bot"
+if [ "$player" == 'bot' ]; then
+    exit 0
+elif $isbot; then
+    echo "automated moves detected: score not recorded"
     echo
 else
     echo "$score $player" >>$config/scores/$size
 fi
 
+echo
 echo 'leader board'
 echo '------------'
 sort -n $config/scores/$size 2>/dev/null | head -5
