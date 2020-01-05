@@ -1,10 +1,9 @@
 
 module Data.Group.Modulo where
 
-import Data.Group
 import Data.List
 import Control.Applicative
-import Data.Group
+import Data.Group hiding ((^))
 import Utils
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
@@ -22,11 +21,8 @@ instance Group Bool where inv = id
 
 data Modulo = M { baseof :: Maybe Int, valueof :: Int }
 
-evaluate :: Modulo -> Int
-evaluate x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
-
 forceModulo :: Modulo -> Modulo
-forceModulo m = M (baseof m) (evaluate m)
+forceModulo m = M (baseof m) (fromEnum m)
 
 modify :: (Int -> Int) -> Modulo -> Modulo
 modify f x = x { valueof = f.valueof $ x }
@@ -39,20 +35,34 @@ compose f x y = M (checkbase x y) (valueof x `f` valueof y)
         else baseof a <|> baseof b
 
 instance Show Modulo where
-    show = show.evaluate
+    show = show.fromEnum
+instance Enum Modulo where
+    fromEnum x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
+    toEnum = M Nothing
 instance Eq Modulo
-    where (==) = (==) `on` evaluate
+    where (==) = (==) `on` fromEnum
 instance Ord Modulo
-    where compare = compare `on` evaluate
+    where compare = compare `on` fromEnum
+
 instance Num Modulo where
     (+) = compose (+)
     (-) = compose (-)
     negate = modify negate
-    fromInteger = M Nothing . fromIntegral
+    fromInteger = toEnum . fromIntegral
     -- important to force evaluation
     (*) = compose (*) `on` forceModulo
     abs = undefined
     signum = undefined
+
+instance Real Modulo where
+    toRational = toRational . fromEnum
+
+instance Integral Modulo where
+    quotRem x y = (quot x y, rem x y)
+    quot = compose quot `on` forceModulo
+    rem = compose rem `on` forceModulo
+    toInteger = toInteger . fromEnum
+
 instance Semigroup Modulo  where (<>) = (+)
 instance Monoid Modulo where
     mempty = fromInteger 0
@@ -64,3 +74,8 @@ modulo n = map (M (Just n)) [0..(n-1)]
 
 base :: Int -> Modulo -> Modulo
 base n = (M (Just n) 0 <>)  
+
+-- implements repeated squares
+power :: Integral a => a -> Modulo -> Modulo
+power exponent = product . zipFilter (binary exponent) . iterate (^2)
+
