@@ -13,3 +13,6 @@ hanoi : coat
 coat :
 	make coat -C Utils
 
+clean:
+	find . -name '*.hi' -delete
+	find . -name '*.o' -delete

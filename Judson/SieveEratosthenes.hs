@@ -1,4 +1,6 @@
 
+module SieveEratosthenes where
+
 import Data.List
 
 divisibleBy :: Int -> Int -> Bool
