@@ -2,7 +2,7 @@
 
 config=$HOME/.config/hanoi
 
-export PATH=$config:$PATH
+export PATH=$config/bin/:$PATH
 
 mkdir -p $config/scores/
 

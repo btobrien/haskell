@@ -22,4 +22,4 @@ scp ~/bin/$app $user_host:/home/$user/bin/$app
 
 ls ~/.config/$app &>/dev/null || exit
 
-scp -pr ~/.config/$app $user_host:/home/$user/.config/$app
+scp -pr ~/.config/$app $user_host:/home/$user/.config/

@@ -1,11 +1,13 @@
 
 hanoi: soi hang
-	mkdir -p ~/bin && mkdir -p ~/.config/hanoi
-	cp ~/bin/coat ~/.config/hanoi/
-	ghc -o ~/.config/hanoi/show show.hs
-	ghc -o ~/.config/hanoi/move move.hs
-	cp toi.sh ~/.config/hanoi/toi
+	mkdir -p ~/bin && mkdir -p ~/.config/hanoi/bin
+	cp ~/bin/coat ~/.config/hanoi/bin/
+	ghc -o ~/.config/hanoi/bin/show show.hs
+	ghc -o ~/.config/hanoi/bin/move move.hs
+	cp toi.sh ~/.config/hanoi/bin/toi
 	cp hanoi.sh ~/bin/hanoi
+	cp ~/bin/soi ~/.config/hanoi/bin/
+	cp ~/bin/hang ~/.config/hanoi/bin/
 
 soi :
 	ghc -o ~/bin/soi Solve.hs
