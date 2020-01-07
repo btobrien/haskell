@@ -1,6 +1,7 @@
 
 import Data.List
 import Data.Char
+import Control.Applicative
 import Control.Monad
 import Control.Monad.State
 
