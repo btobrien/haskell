@@ -1,11 +1,12 @@
 #!/bin/bash
 
-source ~/.bashrc
+config=$HOME/.config/payout
+export PATH=$config/bin:$PATH
+
 set -o pipefail
 
-dir="$HOME/.config/payouts"
-mkdir -p "$dir/records"
-cd $dir
+mkdir -p "$config/records"
+cd $config
 
 today=$(date +"%Y%m%d")
 sender='tp2@wolve.com'

@@ -1,7 +1,6 @@
 #!/bin/bash
 
 config=$HOME/.config/hanoi
-
 export PATH=$config/bin:$PATH
 
 mkdir -p $config/scores/
