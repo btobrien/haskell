@@ -34,11 +34,11 @@ compose f x y = M (checkbase x y) (valueof x `f` valueof y)
         then undefined
         else baseof a <|> baseof b
 
-instance Show Modulo where
-    show = show.fromEnum
 instance Enum Modulo where
     fromEnum x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
     toEnum = M Nothing
+instance Show Modulo where
+    show = show.fromEnum
 instance Eq Modulo
     where (==) = (==) `on` fromEnum
 instance Ord Modulo
@@ -72,8 +72,10 @@ instance Group Modulo where inv = negate
 modulo :: Int -> [Modulo]
 modulo n = map (M (Just n)) [0..(n-1)]
 
-base :: Int -> Modulo -> Modulo
-base n = (M (Just n) 0 <>)  
+base :: Enum a => Int -> a -> Modulo
+base n = M (Just n) . fromEnum
+
+baseOf = fromJust . baseof
 
 -- implements repeated squares
 power :: Integral a => a -> Modulo -> Modulo

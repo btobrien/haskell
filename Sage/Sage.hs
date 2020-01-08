@@ -10,7 +10,8 @@ import Data.Group
 import Data.Group.Modulo
 import Data.Group.Units
 import Data.Group.Permutation
-import Data.Group.Dihedral
+import Data.Group.Dihedral (reflect, dihedral, dihedralOn)
+import qualified Data.Group.Dihedral as Dih
 import Data.Group.NonGroup
 import Control.Applicative
 --import Data.Group.Table
@@ -22,7 +23,7 @@ infixr 5 <:
 (<:) :: Ord a => Cycle a -> Permutation a -> Permutation a
 c <: p = reduce [c] <> p
 
-r = rotate 1
+r = Dih.rotate 1
 s = reflect 
 
 infixr 0 ||| 

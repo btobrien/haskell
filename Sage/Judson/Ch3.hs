@@ -15,6 +15,8 @@ import Data.Group.NonGroup
 import Data.Group.Units
 --import Data.Group.Table
 
+main = undefined
+
 q2 = undefined
 
 q3 = do
@@ -27,9 +29,9 @@ q3 = do
 q15 = check (dihedral 3) (hasOrderOf 6) isAbelian
 
 q16 =
-    dih 3 (s<>r)^2
+    dih 3 (s<>r).^2
     ==
-    dih 3 s^2<>r^2
+    dih 3 s.^2 <> r.^2
 
 q17 = do
     print $ test (modulo 8)
@@ -51,13 +53,13 @@ q35 = dump $ subgroups (dihedral 3)
 
 q36 = dump $ subgroups (dihedral 4)
 
-q45 = all isSubgroup .
+q45 = all isGroup .
     (map.map) intersect . pairs $ subgroups (symmetric 3)
 
-q46 = all isSubgroup .
+q46 = all isGroup .
     (map.map) union . pairs $ subgroups (symmetric 3)
 
-q47 = all isSubgroup .
+q47 = all isGroup .
     (map.map) products . pairs $ subgroups (symmetric 3)
 
 q52 = check (dihedral 3) (not.isAbelian) $

@@ -148,44 +148,11 @@ sortOn' = sortBy . (compare `on`)
 selectOn :: Ord b => (a -> b) -> [a] -> a
 selectOn = head .: sortOn'
 
--- create separate prime module?
-
 difference :: (Int,Int) -> (Int,Int) -> (Int,Int)
 difference (x,y) (x',y') = (x - x', y - y')  
 
 shift :: (Int,Int) -> (Int,Int) -> (Int,Int)
 shift (x,y) (x',y') = (x + x', y + y')  
-
-divisibleBy :: Int -> Int -> Bool
-divisibleBy x = (==0) . (`mod`x)
-
-divides :: Int -> Int -> Bool
-divides = flip divisibleBy
-
-divisors :: Int -> [Int]
-divisors n = filter (divides n) [2..(n `div` 2)]
-
--- assumes divisors is sorted
-smallestDivisor :: Int -> Int
-smallestDivisor n = head . (++[n]) . divisors $ n
-
-largestDivisor :: Int -> Int
-largestDivisor n = last . divisors $ n
-
-primes :: [Int]
-primes = sieve [2..]
-    where
-    sieve [] = []
-    sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
-
-factor :: Int -> [Int]
-factor = unfoldr $ \n ->
-    if n == 1
-    then Nothing
-    else let d = smallestDivisor n in Just (d, n `div` d)
-
-isPrime :: Int -> Bool
-isPrime n = factor n == [n]
 
 check g assumption f =
     if assumption g

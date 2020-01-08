@@ -1,5 +1,11 @@
 
-all : tile dihsubs clean
+all : tile dihsubs clean sage judson
+
+sage :
+	ghc Sage.hs
+
+judson : 
+	ghc Judson/*
 
 tile :
 	mkdir -p ~/bin && mkdir -p ~/.config/tile

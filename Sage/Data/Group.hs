@@ -3,10 +3,11 @@ module Data.Group where
 
 import Data.Monoid
 import Data.List hiding (cycle)
-import Prelude hiding (cycle, (^))
+import Prelude hiding (cycle)
 import Control.Applicative
 import Control.Monad
 import Utils
+import Data.Prime
 
 class (Monoid a, Ord a) => Group a where
     inv :: a -> a
@@ -19,11 +20,11 @@ class (Monoid a, Ord a) => Group a where
 fold :: Group a => [a] -> a
 fold = foldl' (><) e
 
-infixr 9 ^
-g ^ 0 = e
-g ^ 1 = g
-g ^ n | n < 0 = inv g ^ abs n
-g ^ n = let m = n `div` 2 in g^m <> g^(n-m)
+infixr 9 .^
+g .^ 0 = e
+g .^ 1 = g
+g .^ n | n < 0 = inv g .^ abs n
+g .^ n = let m = n `div` 2 in g.^m <> g.^(n-m)
 
 cayleyTable :: Group a => [a] -> [[a]]
 cayleyTable xs = (<$>xs) . (<>) <$> xs
@@ -90,7 +91,7 @@ decompose = undefined
 uniqueness :: Group a => [a] -> Bool
 uniqueness xs = length xs == length (normalize xs)
 
--- requires identity to be the minimal element
+-- checks whether identity is the minimal element
 checkid :: Group a => [a] -> Bool
 checkid = identity . head . sort
 

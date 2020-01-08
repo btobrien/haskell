@@ -13,6 +13,9 @@ hanoi : coat
 coat :
 	make coat -C Utils
 
+payout :
+	make payout -C Payout
+
 clean:
 	find . -name '*.hi' -delete
 	find . -name '*.o' -delete
