@@ -67,7 +67,7 @@ instance Ord a => Monoid (Permutation a) where
     mempty = P []
     mappend = (<>)
 instance Ord a => Group (Permutation a) where
-    inv = reduce . reverse . map reverse . cyclesOf
+    inverse = reduce . reverse . map reverse . cyclesOf
 
 apply :: Ord a => Permutation a -> a -> a
 apply = through . cyclesOf

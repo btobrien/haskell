@@ -17,7 +17,7 @@ instance Semigroup Bool
 instance Monoid Bool where
     mempty = False 
     mappend = (<>)
-instance Group Bool where inv = id 
+instance Group Bool where inverse = id 
 
 data Modulo = M { baseof :: Maybe Int, valueof :: Int }
 
@@ -67,17 +67,13 @@ instance Semigroup Modulo  where (<>) = (+)
 instance Monoid Modulo where
     mempty = fromInteger 0
     mappend = (<>)
-instance Group Modulo where inv = negate
+instance Group Modulo where inverse = negate
 
-modulo :: Int -> [Modulo]
-modulo n = map (M (Just n)) [0..(n-1)]
+modulos :: Int -> [Modulo]
+modulos n = map (M (Just n)) [0..(n-1)]
 
-base :: Enum a => Int -> a -> Modulo
-base n = M (Just n) . fromEnum
+modulo :: Enum a => Int -> a -> Modulo
+modulo n = M (Just n) . fromEnum
 
 baseOf = fromJust . baseof
-
--- implements repeated squares
-power :: Integral a => a -> Modulo -> Modulo
-power exponent = product . zipFilter (binary exponent) . iterate (^2)
 

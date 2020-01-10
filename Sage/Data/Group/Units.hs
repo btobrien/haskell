@@ -50,13 +50,13 @@ instance Monoid Unit where
     mempty = U (fromInteger 1)
     mappend = (<>)
 instance Group Unit where
-    inv x = fromMaybe e $ do
+    inverse x = fromMaybe identity $ do
         n <- baseof (val x)
         let x' = fst $ euclidean (fromEnum (val x)) n
-        return . U . base n . fromInteger . toInteger $ x'
+        return . U . modulo n . fromInteger . toInteger $ x'
 
 unit :: Enum a => Int -> a -> Unit
-unit n x = let u = base n x in if isUnit u then U u else undefined
+unit n x = let u = modulo n x in if isUnit u then U u else undefined
 
-units n = [U m | m <- modulo n, isUnit m]
+units n = [U m | m <- modulos n, isUnit m]
 

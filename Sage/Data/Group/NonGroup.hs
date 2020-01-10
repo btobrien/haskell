@@ -24,8 +24,8 @@ instance Monoid NonGroup where
     mempty = NG 0
     mappend = (<>)
 instance Group NonGroup where
-    inv (NG 0) = NG 0
-    inv (NG 1) = NG 2
-    inv (NG 2) = NG 1
+    inverse (NG 0) = NG 0
+    inverse (NG 1) = NG 2
+    inverse (NG 2) = NG 1
 
 nonGroup = map NG [0..2]

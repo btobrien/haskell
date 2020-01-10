@@ -12,20 +12,30 @@ import Control.Monad.State
 generate :: Eq a => (a -> a) -> a -> [a]
 generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
 
-mapp = map . uncurry
 powerset = filterM (const [True,False])
 powerset' = filterM (const [False,True])
+
 pairs xs = (,) <$> xs <*> xs
 thruples xs = (,,) <$> xs <*> xs <*> xs
 also f x = (x, f x)
+
 ifhead :: ([a] -> b) -> [a] -> Maybe b
 ifhead f xs = if null xs then Nothing else Just (f xs)
+
+unfold :: ([a] -> (b,[a])) -> [a] -> [b]
 unfold = unfoldr . ifhead
-on process view x y = process (view x) (view y); infixr 8 `on`
-over process (viewx,viewy) x y = process (viewx x) (viewy y)
 
 chunksOf :: Int -> [a] -> [[a]]
-chunksOf n = unfoldr (\xs -> if null xs then Nothing else Just (take n xs, drop n xs))
+chunksOf = unfold . splitAt
+
+scan :: (a -> b -> b) -> b -> [a] -> [b]
+scan = scanl . flip
+
+takeUntil :: (a -> Bool) -> [a] -> [a]
+takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
+
+on process view x y = process (view x) (view y); infixr 8 `on`
+over process (viewx,viewy) x y = process (viewx x) (viewy y)
 
 neighbors :: [a] -> [(a,a)]
 neighbors = zip <$> id <*> tail
@@ -50,25 +60,23 @@ rotate' 90 = reverse . transpose
 rotate' 180 = map reverse . reverse
 rotate' 270 = map reverse . transpose
 
+swap :: (a,b) -> (b,a)
 swap (x,y) = (y,x)
 
-replace :: Int -> a -> [a] -> [a]
-replace n x xs = take n xs ++ [x] ++ drop (n+1) xs
+replaceAt :: Int -> a -> [a] -> [a]
+replaceAt n x xs = take n xs ++ [x] ++ drop (n+1) xs
 
+insertAt :: Int -> a -> [a] -> [a]
 insertAt n x xs = take n xs ++ [x] ++ drop n xs
 
 squash :: (a -> Bool) -> a -> Maybe a
-squash isNothing x = if isNothing x then Nothing else Just x
-
-takeUntil :: (a -> Bool) -> [a] -> [a]
-takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
-
-scan = scanl . flip
+squash nothingTest x = if nothingTest x then Nothing else Just x
 
 convergence :: Eq a => [a] -> a
 convergence = fst . head . dropWhile (not.equal) . neighbors
 
 (.:) f g x y = f (g x y) 
+
 p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>
 p <||> p' = (||) <$> p <*> p'; infixl 1 <||>
 p <++> p' = (++) <$> p <*> p'; infixl 2 <++>
@@ -83,8 +91,8 @@ p ++> p' = (++) <$> const p <*> p'; infixl 1 ++>
 
 infixr 5 +|+
 (+|+) :: [a] -> [a] -> [a]
---xs +|+ ys = length ys `par` (xs ++ ys)
 (+|+) = (++)
+--xs +|+ ys = length ys `par` (xs ++ ys)
 
 (=~=) :: Ord a => [a] -> [a] -> Bool
 (=~=) = (==) `on` Set.fromList
@@ -138,7 +146,7 @@ ____ = putStr
 pad n xs = take n $ xs ++ repeat ' ' 
 
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
-groupOn = groupBy.((==)`on`)
+groupOn = groupBy . ((==)`on`)
 
 -- we have more efficient impls of these
 sortOn' :: Ord b => (a -> b) -> [a] -> [a]
@@ -161,7 +169,8 @@ check g assumption f =
 
 binary :: Integral a => a -> [Bool]
 binary = unfoldr $ \n ->
-    if n==0 then Nothing else Just (odd n, n `div` 2)
+    if n==0 then Nothing
+	else Just (odd n, n `div` 2)
 
 fromBinary :: [Bool] -> Int
 fromBinary = foldr (\b -> (fromEnum b +) . (2*)) 0

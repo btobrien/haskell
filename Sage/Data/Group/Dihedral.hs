@@ -18,11 +18,11 @@ degree = snd.val
 
 xcompose :: (Bool,Modulo) -> (Bool,Modulo) -> (Bool,Modulo)
 xcompose (a,b) (c,d) = if c
-    then (a<>c, inv b <> d) 
+    then (a<>c, inverse b <> d) 
     else (a, b<>d)
 
 instance Show Dihedral where
-    show x | identity x = "e"
+    show x | isIdentity x = "e"
     show x = shows (reflected x) ++ showr (degree x)
         where
         shows s = if s
@@ -48,13 +48,13 @@ instance Monoid Dihedral where
     mappend = (<>)
 
 instance Group Dihedral where
-    inv g = if reflected g
+    inverse g = if reflected g
         then g
         else reflect <> g <> reflect
 
 rotate n = Di (False, n)
-reflect = Di (True, e)
-dih n = (<>) (Di (False, base n 0))
+reflect = Di (True, identity)
+dih n = (<>) (Di (False, modulo n 0))
 
 dihedral :: Int -> [Dihedral]
 dihedral n = gen [dih n (rotate 1), dih n reflect]
@@ -64,9 +64,9 @@ rotateOn n = P [[1..n]]
 
 reflectOn :: Int -> Permutation Int
 reflectOn n = reduce
-    . map (\x -> [fromEnum x, (fromEnum.inv) x])
+    . map (\x -> [fromEnum x, (fromEnum.inverse) x])
     . take (n`div`2)
-    $ modulo n
+    $ modulos n
 
 dihedralOn :: Int -> [Permutation Int]
 dihedralOn n = gen [rotateOn n, reflectOn n]

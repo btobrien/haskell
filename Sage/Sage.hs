@@ -32,7 +32,7 @@ name ||| x = putStr (take 13 (name ++ repeat ' ')) >> print x
 test :: Int -> IO ()
 test n = do
     "bool"         |||  isGroup <$> [[True,False]]
-    "modulos"      |||  isGroup . modulo <$> [2..n]
+    "modulos"      |||  isGroup . modulos <$> [2..n]
     "units"        |||  isGroup . units <$> [2..n]
     "dihedrals"    |||  isGroup . dihedral <$> [2..n]
     "dihedralOns"  |||  isGroup . dihedralOn <$> [2..n]

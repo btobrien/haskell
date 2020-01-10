@@ -1,11 +1,14 @@
 
-all : tile dihsubs clean sage judson
+all : sage rsa judson tile dihsubs 
 
 sage :
 	ghc Sage.hs
 
+rsa :
+	ghc Data/Crypt/RSA.hs
+
 judson : 
-	ghc Judson/*
+	ghc Judson/Ch3.hs
 
 tile :
 	mkdir -p ~/bin && mkdir -p ~/.config/tile
@@ -15,7 +18,7 @@ tile :
 	cp Data/Group/Tile/tile.sh ~/bin/tile
 
 dihsubs :
-	ghc -threaded -rtsopts -O2 -o ~/bin/dihsubs main/dihsubs.hs
+	ghc -threaded -rtsopts -O2 -o ~/bin/dihsubs Data/Group/dihsubs.hs
 
 clean:
 	find . -name '*.hi' -delete

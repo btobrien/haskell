@@ -66,8 +66,8 @@ slideUp board =
 swapTopAt :: Int -> [[a]] -> [[a]] 
 swapTopAt _ (xs:[]) = [xs]
 swapTopAt n (xs:ys:rest) =
-    replace n (ys !! n) xs :
-    replace n (xs !! n) ys :
+    replaceAt n (ys !! n) xs :
+    replaceAt n (xs !! n) ys :
     rest
 
 showBoard :: [[Tile]] -> String
