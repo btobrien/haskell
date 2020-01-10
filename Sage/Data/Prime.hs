@@ -34,8 +34,7 @@ primes = sieve [2..]
 
 factor :: Int -> [Int]
 factor = unfoldr $ \n ->
-    if n == 1
-    then Nothing
+    if n == 1 then Nothing
     else let d = smallestDivisor n in Just (d, n `div` d)
 
 isPrime :: Int -> Bool
