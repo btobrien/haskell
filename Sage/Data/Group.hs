@@ -10,52 +10,57 @@ import Utils
 import Data.Prime
 
 class (Monoid a, Ord a) => Group a where
-    inv :: a -> a
-    e :: a
-    e = mempty
+    inverse :: a -> a
+    identity :: a
+    identity = mempty
 
 (><) :: Group a => a -> a -> a
 (><) = flip (<>)
 
-fold :: Group a => [a] -> a
-fold = foldl' (><) e
+productOf :: Group a => [a] -> a
+productOf = foldl' (><) identity
+
+square :: Monoid a => a -> a
+square x = x <> x
+
+power :: (Integral n, Group a) => n -> a -> a
+power exponent | exponent < 0 = power (abs exponent) . inverse
+power exponent = productOf . zipFilter (binary exponent) . iterate square
+-- implements repeated squares
 
 infixr 9 .^
-g .^ 0 = e
-g .^ 1 = g
-g .^ n | n < 0 = inv g .^ abs n
-g .^ n = let m = n `div` 2 in g.^m <> g.^(n-m)
+(.^) :: (Integral n, Group a) => a -> n -> a
+(.^) = flip power
 
 cayleyTable :: Group a => [a] -> [[a]]
 cayleyTable xs = (<$>xs) . (<>) <$> xs
     
-identity :: Group a => a -> Bool
-identity = (==e)
+isIdentity :: Group a => a -> Bool
+isIdentity = (==identity)
 
 selfinv :: Group a => a -> Bool
 selfinv = inverts <$> id <*> id
 
 preserving :: Group a => [a] -> Bool
 preserving xs = 
-    xs == map (e<>) xs &&
-    xs == map (<>e) xs
+    xs == map (identity<>) xs &&
+    xs == map (<>identity) xs
 
 inverts :: Group a => a -> a -> Bool
-inverts x y = inv x == y
+inverts x y = inverse x == y
 
 invertible :: Group a => [a] -> Bool
 invertible xs =
-    all (inverts' <$> inv <*> id) xs
+    all (inverts' <$> inverse <*> id) xs
     && 
-    xs =~= map inv xs
+    xs =~= map inverse xs
     where
     inverts' x y =
-        e == x <> y &&
-        e == y <> x
-
+        identity == x <> y &&
+        identity == y <> x
 
 inverses :: Group a => [a] -> [[a]]
-inverses = normalize . map (\x -> normalize [x,inv x]) . delete e
+inverses = normalize . map (\x -> normalize [x,inverse x]) . delete identity
 
 products :: Group a => [a] -> [a] -> [a]
 products xs ys = normalize [x <> y | x <- xs, y <- ys]
@@ -64,16 +69,16 @@ closure :: Group a => [a] -> [a]
 closure = products <$> id <*> id
 
 closed :: Group a => [a] -> Bool
-closed xs = closure xs <~ (e : sort xs)
+closed xs = closure xs <~ (identity : sort xs)
 
 close :: Group a => [a] -> [a]
 close = until closed closure . normalize 
 
 closedOrder :: Group a => [a] -> Int
-closedOrder xs = convergence . map length . iterate closure $ e : xs ++ map inv xs
+closedOrder xs = convergence . map length . iterate closure $ identity : xs ++ map inverse xs
 
 gen :: Group a => [a] -> [a]
-gen xs = close . (e:) $ xs ++ map inv xs
+gen xs = close . (identity:) $ xs ++ map inverse xs
 
 gens :: Group a => [a] -> [a] -> Bool
 gens gs hs = closedOrder hs == length gs
@@ -83,7 +88,7 @@ minGen gs = head .
     filter (gens gs) .
     powerset' .
     reverse $
-    delete e gs
+    delete identity gs
 
 decompose :: Group a => [a] -> a -> [(Int,a)]
 decompose = undefined
@@ -93,7 +98,7 @@ uniqueness xs = length xs == length (normalize xs)
 
 -- checks whether identity is the minimal element
 checkid :: Group a => [a] -> Bool
-checkid = identity . head . sort
+checkid = isIdentity . head . sort
 
 isGroup :: Group a => [a] -> Bool
 isGroup = not.null
@@ -104,7 +109,7 @@ isGroup = not.null
     <&&> closed
 
 cycle :: Group a => a -> [a] 
-cycle g = generate (g<>) e 
+cycle g = generate (g<>) identity 
 
 generates :: Group a => [a] -> a -> Bool
 generates xs x = length xs == length (cycle x)
@@ -119,15 +124,15 @@ nonGenerators xs = filter (not . generates xs) xs
 cycles :: Group a => [a] -> [[a]] 
 cycles =
     normalize .
-    map (normalize . delete e . cycle) .
-    delete e .
+    map (normalize . delete identity . cycle) .
+    delete identity .
     nonGenerators
 
 subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
 subgroupsWithOrder withOrder xs = do
     d <- filter withOrder $ divisors (length xs)
     g <- filter closed $ pack (d-1) (cycles xs)
-    return (e:g)
+    return (identity:g)
 
 subgroups :: Group a => [a] -> [[a]]
 subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
@@ -136,7 +141,7 @@ setsFrom :: Group a => (a -> [a] -> [a]) -> [a] -> [a] -> [[a]]
 setsFrom f hs gs = normalize [ sort (f g hs) | g <- gs]
 
 conjugate :: Group a => a -> a -> a
-conjugate x y = inv x <> y <> x
+conjugate x y = inverse x <> y <> x
 
 cosetsr :: Group a => [a] -> [a] -> [[a]] 
 cosetsr = setsFrom (\g -> map (<>g))
@@ -154,7 +159,7 @@ conjugacies :: Group a => [a] -> [a] -> [[a]]
 conjugacies = setsFrom (\g -> map (conjugate g))
 
 backProduct :: Group a => [a] -> [a]
-backProduct = normalize . map (\(x,y) -> x <> inv y) . pairs
+backProduct = normalize . map (\(x,y) -> x <> inverse y) . pairs
 
 isCyclic :: Group a => [a] -> Bool
 isCyclic = any <$> generates <*> id
@@ -178,8 +183,8 @@ center :: Group a => [a] -> [a]
 center = normalize . (filter <$> commutes <*> id)
 
 instance (Group a, Group b) => Group (a,b) where
-    inv (a,b) = (inv a, inv b)
+    inverse (a,b) = (inverse a, inverse b)
 instance (Group a, Group b, Group c) => Group (a,b,c) where
-    inv (a,b,c) = (inv a, inv b, inv c)
+    inverse (a,b,c) = (inverse a, inverse b, inverse c)
 instance (Group a, Group b, Group c, Group d) => Group (a,b,c,d) where
-    inv (a,b,c,d) = (inv a, inv b, inv c, inv d)
+    inverse (a,b,c,d) = (inverse a, inverse b, inverse c, inverse d)
