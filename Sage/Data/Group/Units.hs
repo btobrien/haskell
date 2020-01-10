@@ -26,9 +26,11 @@ umodify f (U x) = U (f x)
 ucompose :: (Modulo -> Modulo -> Modulo) -> Unit -> Unit -> Unit
 ucompose f (U x) (U y) = U (f x y)
 
+-- should be Enum ???
 instance Enum Unit where
     fromEnum = fromEnum . val
     toEnum = undefined
+
 instance Show Unit where
     show = show.val
 instance Eq Unit

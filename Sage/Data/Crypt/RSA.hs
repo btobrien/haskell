@@ -9,9 +9,8 @@ import Data.Prime
 type Seed = Int
 type Key = Modulo
 
--- p & q assumed to be prime
 generate :: Seed -> (Int,Int) -> (Key,Key)
-generate s (p,q) = let
+generate s (p,q) | isPrime p && isPrime q = let
 	n = p * q
 	m = (p-1) * (q-1)
 	e = units m !! (s `mod` m)
@@ -25,9 +24,5 @@ decode :: Key -> Int -> Int
 decode = encode
 
 crack :: Key -> Key
-crack e = let
-	n = baseOf e
-	[p,q] = factor n
-	m = (p-1) * (q-1)
-	d = inv (unit m e)
-	in base n d
+crack e = let n = baseOf e
+	in base n . inv . unit (totient n) $ e

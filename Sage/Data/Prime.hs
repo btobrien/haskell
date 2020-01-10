@@ -62,3 +62,11 @@ euclidean a b = euclidean' (a,b) (1,0) (0,1)
 totient :: Int -> Int
 totient n = let ps = nub (factor n) in product (map (subtract 1) ps) * (n `div` product ps)
 
+newtype Prime = P Int
+
+prime :: Int -> Prime
+prime p = if isPrime p then P p else undefined
+
+instance Enum Prime where
+    fromEnum (P p) = p
+    toEnum = P . (primes !!)
