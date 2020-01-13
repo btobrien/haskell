@@ -22,7 +22,7 @@ xcompose (a,b) (c,d) = if c
     else (a, b<>d)
 
 instance Show Dihedral where
-    show x | isIdentity x = "e"
+    show x | x == identity = "e"
     show x = shows (reflected x) ++ showr (degree x)
         where
         shows s = if s

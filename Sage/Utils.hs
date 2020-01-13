@@ -156,6 +156,9 @@ sortOn' = sortBy . (compare `on`)
 selectOn :: Ord b => (a -> b) -> [a] -> a
 selectOn = head .: sortOn'
 
+select :: Int -> [a] -> a
+select seed xs = cycle xs !! seed
+
 difference :: (Int,Int) -> (Int,Int) -> (Int,Int)
 difference (x,y) (x',y') = (x - x', y - y')  
 

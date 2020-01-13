@@ -35,9 +35,6 @@ infixr 9 .^
 cayleyTable :: Group a => [a] -> [[a]]
 cayleyTable xs = (<$>xs) . (<>) <$> xs
     
-isIdentity :: Group a => a -> Bool
-isIdentity = (==identity)
-
 selfinv :: Group a => a -> Bool
 selfinv = inverts <$> id <*> id
 
@@ -98,7 +95,7 @@ uniqueness xs = length xs == length (normalize xs)
 
 -- checks whether identity is the minimal element
 checkid :: Group a => [a] -> Bool
-checkid = isIdentity . head . sort
+checkid = (==identity) . head . sort
 
 isGroup :: Group a => [a] -> Bool
 isGroup = not.null
