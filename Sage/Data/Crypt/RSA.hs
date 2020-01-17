@@ -1,8 +1,6 @@
 
 module Data.Crypt.RSA where
 
-import Data.List (cycle)
-
 import Utils ((<==>), select)
 import Data.Prime (isPrime, totient)
 import Data.Group (inverse)

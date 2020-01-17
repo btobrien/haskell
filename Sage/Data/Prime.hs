@@ -59,4 +59,3 @@ primes = sieve [2..]
     where
     sieve [] = []
     sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
-
