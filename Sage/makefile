@@ -1,11 +1,16 @@
 
-all : sage rsa judson tile dihsubs 
+allclean : all clean
+
+all : sage rsa judson tile dihsubs ecc
 
 sage :
 	ghc Sage.hs
 
 rsa :
-	ghc Data/Crypt/RSA.hs
+	ghc Data/Algabraic/Crypt/RSA.hs
+
+ecc :
+	ghc -o ~/.config/noise/bin/repetition Data/Algabraic/Code/repetition.hs
 
 judson : 
 	ghc Judson/Ch3.hs

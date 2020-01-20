@@ -50,7 +50,7 @@ euclidean a b = euclidean' (a,b) (1,0) (0,1)
     euclidean' base a b = let
         r = a `plus` scale (-q) b
         q = dot base a `div` dot base b
-		in
+        in
         if dot base b == 0 then a
         else euclidean' base b r
         where

@@ -170,7 +170,7 @@ check g assumption f =
 binary :: Integral a => a -> [Bool]
 binary = unfoldr $ \n ->
     if n==0 then Nothing
-	else Just (odd n, n `div` 2)
+    else Just (odd n, n `div` 2)
 
 fromBinary :: [Bool] -> Int
 fromBinary = foldr (\b -> (fromEnum b +) . (2*)) 0

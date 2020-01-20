@@ -14,11 +14,11 @@ type Key = Modulo
 
 generate :: Seed -> (Int,Int) -> (Key,Key)
 generate seed (p,q) | isPrime p && isPrime q = let
-	n = p * q
-	m = (p-1) * (q-1)
-	e = cycle (units m) !! seed
-	d = inverse e
-	in (modulo n e, modulo n d)
+    n = p * q
+    m = (p-1) * (q-1)
+    e = cycle (units m) !! seed
+    d = inverse e
+    in (modulo n e, modulo n d)
 
 encode :: Key -> Int -> Int
 encode e x = fromEnum $ (modulo (baseOf e) x) ^ e
@@ -31,4 +31,4 @@ matching (e,d) = all (decode d . encode e <==> id) [0..(baseOf e)-1]
 
 crack :: Key -> Key
 crack e = let n = baseOf e
-	in modulo n . inverse . unit (totient n) $ e
+    in modulo n . inverse . unit (totient n) $ e
