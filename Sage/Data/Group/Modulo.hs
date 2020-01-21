@@ -19,6 +19,16 @@ instance Monoid Bool where
     mappend = (<>)
 instance Group Bool where inverse = id 
 
+instance Num Bool where
+    (+) = (/=)
+    (-) = (+)
+    negate = id
+    fromInteger = toEnum . fromIntegral
+    -- important to force evaluation
+    (*) = (&&)
+    abs = id
+    signum = undefined
+
 data Modulo = M { baseof :: Maybe Int, valueof :: Int }
 
 forceModulo :: Modulo -> Modulo
@@ -51,7 +61,7 @@ instance Num Modulo where
     fromInteger = toEnum . fromIntegral
     -- important to force evaluation
     (*) = compose (*) `on` forceModulo
-    abs = undefined
+    abs = id
     signum = undefined
 
 instance Real Modulo where

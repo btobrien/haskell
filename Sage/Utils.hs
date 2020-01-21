@@ -1,7 +1,9 @@
 
 module Utils where
 
+import System.Environment
 import Data.List
+import Data.Maybe
 import Control.Applicative
 import Control.Monad
 --import Control.Parallel
@@ -120,8 +122,14 @@ pack = map concat .: pack'
         chosen = pack' (n - length xs) (filter (null . intersect xs) xss)
         notChosen = pack' n xss
 
+getArg :: Int -> IO String
+getArg index = fromMaybe "" . listToMaybe . drop index <$> getArgs
+
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
+
+dumpstr :: [String] -> IO ()
+dumpstr = mapM_ putStrLn
 
 dumps :: Show a => [[a]] -> IO ()
 dumps xss = putStr . unlines . map (intercalate " ") . (map.map) show $ xss
@@ -171,6 +179,9 @@ binary :: Integral a => a -> [Bool]
 binary = unfoldr $ \n ->
     if n==0 then Nothing
     else Just (odd n, n `div` 2)
+
+padBinary :: [[Bool]] -> [[Bool]]
+padBinary bs = let width = maximum (map length bs) in take width . (++(repeat False)) <$> bs
 
 fromBinary :: [Bool] -> Int
 fromBinary = foldr (\b -> (fromEnum b +) . (2*)) 0

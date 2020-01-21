@@ -43,6 +43,11 @@ isPrime n = factor n == [n]
 factors :: Int -> [(Int,Int)]
 factors = map ((\(xs,n) -> (head xs, n)) . also length) . group . factor
 
+isPowerOf n x =
+    if x == 1 then True
+    else if x `mod` n /= 0 then False
+    else isPowerOf n (x `div` n)
+
 -- returns the linear combination which produces their gcd
 euclidean :: Int -> Int -> (Int,Int)
 euclidean a b = euclidean' (a,b) (1,0) (0,1)
