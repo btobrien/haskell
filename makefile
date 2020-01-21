@@ -1,5 +1,5 @@
 
-all : clone hanoi tile coat
+all : clone hanoi tile coat noise
 
 clone :
 	make clone -C Utils
@@ -15,6 +15,9 @@ coat :
 
 payout :
 	make payout -C Payout
+
+noise :
+	make all -C Noise
 
 clean:
 	find . -name '*.hi' -delete
