@@ -3,6 +3,7 @@
 import System.Environment
 import Data.List
 import Data.Maybe
+import Control.Applicative
 import Prelude hiding (flip)
 
 main = do

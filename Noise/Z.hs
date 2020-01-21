@@ -2,6 +2,7 @@
 import System.Environment
 import Data.List
 import Data.Maybe
+import Control.Applicative
 
 main = mapM_ putStrLn . strings . read . fromMaybe "(2,3)" . listToMaybe =<< getArgs
 

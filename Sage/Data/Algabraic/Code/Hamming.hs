@@ -4,6 +4,7 @@ module Data.Algabraic.Code.Hamming where
 
 import Data.List
 import Data.Matrix
+import Control.Applicative ((<$>))
 
 import Data.Group.Modulo ()
 import Utils (binary, padBinary, sortOn', chunksOf, (.:))

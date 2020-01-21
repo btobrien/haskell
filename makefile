@@ -1,5 +1,5 @@
 
-all : clone hanoi tile coat noise
+all : clone hanoi tile coat noise sage
 
 clone :
 	make clone -C Utils
@@ -17,7 +17,10 @@ payout :
 	make payout -C Payout
 
 noise :
-	make all -C Noise
+	make -C Noise
+
+sage :
+	make -C Sage
 
 clean:
 	find . -name '*.hi' -delete

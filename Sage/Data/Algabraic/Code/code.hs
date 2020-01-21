@@ -1,4 +1,5 @@
 
+import Control.Applicative
 import Utils (getArg)
 
 import Data.Algabraic.Code (Code, Mode, encode, decode)
