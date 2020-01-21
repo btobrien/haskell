@@ -8,6 +8,25 @@ set -o pipefail
 mkdir -p "$config/records"
 cd $config
 
+if ! [ "$1" == '' ]; then
+	name=$2
+	if ! grep "$name " <address_book >/dev/null; then
+		echo "ERROR: name=$name not recognized"
+		exit 1
+	elif   [ "$1" == 'list' ]; then
+		cat $config/records/* | grep "$name" | cut -d' ' -f2
+	elif [ "$1" == 'total' ]; then
+		cat $config/records/* | grep "$name" | cut -d' ' -f2 | paste -sd+ | bc
+	elif [ "$1" == 'series' ]; then
+		cat $config/records/* | grep "$name" | cut -d' ' -f2 | awk '{total += $0; $0 = total}1'
+	elif [ "$1" == 'plot' ]; then
+		cat $config/records/* | grep "$name" | cut -d' ' -f2 | awk '{total += $0; $0 = total}1' | gnuplot -e "set terminal dumb; plot '<cat' notitle with lines"
+	elif [ "$1" == 'bigplot' ]; then
+		cat $config/records/* | grep "$name" | cut -d' ' -f2 | awk '{total += $0; $0 = total}1' | gnuplot -e "set terminal dumb size $(tput cols) $(tput lines); set title \"$name\"; plot '<cat' notitle with lines"
+	fi
+	exit
+fi
+
 today=$(date +"%Y%m%d")
 sender='tp2@wolve.com'
 subject='Results'
@@ -33,7 +52,7 @@ function set_addresses
         for name in $names; do
             if ! grep "$name " <address_book >/dev/null; then
                 unrecognized=true
-                echo "ERROR: name not recognized"
+                echo "ERROR: name=$name not recognized"
                 echo "would you like to add $name to the address book? (y/n)"
                 read reply
                 echo
@@ -59,16 +78,14 @@ function set_payouts
     set_addresses
     while ! pay <results | tee output.txt | sort; do
         echo
-        distribute_missing <results | tee output.txt | sort
-        echo
-        echo 'would you like to distribute accordingly? (y/n)'
+        echo 'would you like to edit? (y/n)'
         read reply
         echo
         if [ "$reply" == 'y' ]; then
-            cat <output.txt >results
-        else
             edit_results
             set_addresses
+        else
+			exit 1
         fi
     done
     echo
@@ -92,8 +109,4 @@ else
     echo "failed to send"
     exit 1
 fi
-
-
-
-
 
