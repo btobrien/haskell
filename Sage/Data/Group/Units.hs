@@ -18,7 +18,7 @@ isUnit m = fromMaybe True $ do
     let x = fromEnum m
     return $ x /= 0 && gcd x b == 1
 
-newtype Unit = U Modulo; val (U x) = if isUnit x then x else undefined
+newtype Unit = U Modulo; val (U x) = x
 
 umodify :: (Modulo -> Modulo) -> Unit -> Unit
 umodify f (U x) = U (f x)
@@ -26,7 +26,6 @@ umodify f (U x) = U (f x)
 ucompose :: (Modulo -> Modulo -> Modulo) -> Unit -> Unit -> Unit
 ucompose f (U x) (U y) = U (f x y)
 
--- should be Enum ???
 instance Enum Unit where
     fromEnum = fromEnum . val
     toEnum = undefined
@@ -37,15 +36,7 @@ instance Eq Unit
     where (==) = (==) `on` val
 instance Ord Unit
     where compare = compare `on` val
-instance Num Unit where
-    (+) = ucompose (+)
-    (-) = ucompose (-)
-    negate = umodify negate
-    fromInteger = undefined
-    (*) = ucompose (*)
-    abs = undefined
-    signum = undefined
-instance Semigroup Unit  where (<>) = (*)
+instance Semigroup Unit  where (<>) = ucompose (*)
 instance Monoid Unit where
     mempty = U (fromInteger 1)
     mappend = (<>)
@@ -60,3 +51,12 @@ unit n x = let u = modulo n x in if isUnit u then U u else undefined
 
 units n = [U m | m <- modulos n, isUnit m]
 
+psuedoprime :: Int -> Bool
+psuedoprime n = if even n then False else
+    identity == (unit n 2) .^ (n-1)
+
+psuedoprimeBase :: Unit -> Bool
+psuedoprimeBase b = let n = baseOf (val b) in identity == b .^ (n-1)
+
+carmichael :: Int -> Bool
+carmichael = all psuedoprimeBase . units

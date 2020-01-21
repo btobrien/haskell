@@ -26,11 +26,9 @@ if [ "$player" == 'solution' ]; then
     exit 0
 fi
 
-/usr/bin/time -f'%e' toi $size 2>$config/last
+/usr/bin/time -f'%e' toi $size 2>$config/last; [ "$?" == 0 ] || exit 4
 
 [ "$player" != '' ] || exit 0
-
-[ "$?" == 0 ] || exit 4
 
 echo
 score=$(awk '{ print $1 }' <$config/last)

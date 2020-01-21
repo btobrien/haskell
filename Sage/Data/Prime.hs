@@ -19,18 +19,11 @@ divisors n = filter (divides n) [2..(n `div` 2)]
 divisors' :: Int -> [Int]
 divisors' n = 1 : divisors n ++ [n]
 
--- assumes divisors is sorted
 smallestDivisor :: Int -> Int
 smallestDivisor = head . tail . divisors'
 
 largestDivisor :: Int -> Int
 largestDivisor = last . divisors
-
-primes :: [Int]
-primes = sieve [2..]
-    where
-    sieve [] = []
-    sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
 
 factor :: Int -> [Int]
 factor = unfoldr $ \n ->
@@ -66,11 +59,8 @@ euclidean a b = euclidean' (a,b) (1,0) (0,1)
 totient :: Int -> Int
 totient n = let ps = nub (factor n) in product (map (subtract 1) ps) * (n `div` product ps)
 
-newtype Prime = P Int
-
-prime :: Int -> Prime
-prime p = if isPrime p then P p else undefined
-
-instance Enum Prime where
-    fromEnum (P p) = p
-    toEnum = P . (primes !!)
+primes :: [Int]
+primes = sieve [2..]
+    where
+    sieve [] = []
+    sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
