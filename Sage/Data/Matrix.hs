@@ -38,8 +38,7 @@ x <-> y | cols x == cols y = x ++ y
 
 identity :: Num a => Int -> Matrix a
 identity 1 = [[1]]
-identity n | n > 1 =
-    let zeros = replicate (n-1) 0
+identity n | n > 1 = let zeros = replicate (n-1) 0
     in
                     [1:zeros]
                        <->
