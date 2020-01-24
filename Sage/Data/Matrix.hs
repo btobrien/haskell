@@ -3,7 +3,7 @@ module Data.Matrix where
 
 import Control.Applicative ((<$>),(<*>))
 
-import Data.List (transpose)
+import Data.List (transpose, nub)
 import Utils (chunksOf, (.:))
 
 type Matrix a = [[a]]
@@ -43,3 +43,13 @@ identity n | n > 1 = let zeros = replicate (n-1) 0
                     [1:zeros]
                        <->
     (transpose [zeros] <|> identity (n-1))
+
+space :: (Num a, Enum a, Bounded a) => Int -> [[a]]
+space n = sequence $ replicate n [minBound..maxBound]
+
+kernel :: (Eq a, Num a, Enum a, Bounded a) => Matrix a -> [[a]]
+kernel m = [ x | x <- space (cols m), all (==0) (m *. x)]
+
+image :: (Eq a, Num a, Enum a, Bounded a) => Matrix a -> [[a]]
+image m = nub $ (m *.) <$> space (cols m)
+

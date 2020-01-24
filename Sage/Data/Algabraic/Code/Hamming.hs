@@ -12,6 +12,7 @@ import Data.Algabraic.Code (Code)
 
 readBinary :: String -> [Bool]
 readBinary = map (=='1')
+b = readBinary
 
 showBinary :: [Bool] -> String
 showBinary = concatMap (show . fromEnum)
@@ -40,6 +41,7 @@ parity n = let a = core n
     in
     a <|> identity (rows a)
 
+-- assumes only single errors can be corrected
 correction :: Int -> [Bool] -> [Bool]
 correction n syndrome =
     if all not syndrome then repeat False
@@ -54,9 +56,6 @@ core n =
     filter ((1/=).weight) .
     padBinary . map binary $ [1..n]
 
-weight :: [Bool] -> Int
-weight = length . filter id
-
 numDataBits :: Int -> Int
 numDataBits n = n - (ceiling . logBase 2 . fromIntegral $ n+1)
 
@@ -65,3 +64,9 @@ numParityBits k = until (\m -> numDataBits (m+k) >= k) (+1) 2
 
 codeLength :: [Bool] -> Int
 codeLength = (\n -> n + numParityBits n) . length
+
+weight :: [Bool] -> Int
+weight = length . filter id
+
+distance :: [Bool] -> [Bool] -> Int
+distance = weight .: (.+.)
