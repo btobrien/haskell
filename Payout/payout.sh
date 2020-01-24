@@ -20,9 +20,9 @@ if ! [ "$1" == '' ]; then
 	elif [ "$1" == 'series' ]; then
 		cat $config/records/* | grep "$name" | cut -d' ' -f2 | awk '{total += $0; $0 = total}1'
 	elif [ "$1" == 'plot' ]; then
-		cat $config/records/* | grep "$name" | cut -d' ' -f2 | awk '{total += $0; $0 = total}1' | gnuplot -e "set terminal dumb; plot '<cat' notitle with lines"
+		cat $config/records/* | grep "$name" | cut -d' ' -f2 | { echo 0; awk '{total += $0; $0 = total}1'; } | plot lines
 	elif [ "$1" == 'bigplot' ]; then
-		cat $config/records/* | grep "$name" | cut -d' ' -f2 | awk '{total += $0; $0 = total}1' | gnuplot -e "set terminal dumb size $(tput cols) $(tput lines); set title \"$name\"; plot '<cat' notitle with lines"
+		cat $config/records/* | grep "$name" | cut -d' ' -f2 | { echo 0; awk '{total += $0; $0 = total}1'; } | plot big lines $name
 	fi
 	exit
 fi
