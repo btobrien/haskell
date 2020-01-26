@@ -8,7 +8,7 @@ tile : coat
 	make tile -C Sage
 
 hanoi : coat
-	make hanoi -C Hanoi
+	make hanoi -C Games/Hanoi
 
 coat :
 	make coat -C Utils
