@@ -5,7 +5,6 @@ all : Z flipbit check
 
 noise :
 	mkdir -p ~/.config/noise/bin
-	mkdir -p ~/.config/noise/tmp
 	cp import.sh ~/.config/noise/import
 
 check : noise
