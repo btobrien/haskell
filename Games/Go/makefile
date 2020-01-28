@@ -10,6 +10,7 @@ go : config compass
 	ghc -o ~/.config/go/bin/show show.hs
 	cp moveshow.sh ~/.config/go/bin/moveshow
 	cp go.sh ~/bin/go
+	cp ~/bin/compass ~/.config/go/bin/compass
 
 compass :
 	cp compass.sh ~/bin/compass

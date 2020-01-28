@@ -2,6 +2,7 @@
 import System.IO
 import Data.List
 import Data.Char
+import Control.Applicative
 
 import Plus (chunksOf)
 import Go
@@ -13,8 +14,7 @@ main = do
 showBoard :: Board -> String
 showBoard xs = let z = size xs
     in
-    (++"\n") .
-    intercalate "\n" .
+	unlines .
     map (intersperse connect) .
     chunksOf z $
     map (showSquare z) (squares xs)
@@ -30,8 +30,8 @@ showPiece ("", Black) = black 0
 showPiece ("", White) = white 0
 showPiece ((c:_), Black) | isLower c = black 2
 showPiece ((c:_), White) | isLower c = white 2
-showPiece ((c:_), Black) = black 1
-showPiece ((c:_), White) = white 1
+showPiece (_, Black) = black 1
+showPiece (_, White) = white 1
 
 showCoordinate :: Size -> Annotated Coordinate -> Char
 showCoordinate z x = head $ annotation x ++ [gridAt z (value x)]
