@@ -41,7 +41,8 @@ parity n = let a = core n
     in
     a <|> identity (rows a)
 
--- assumes only single errors can be corrected
+-- assumes only single errors can be corrected (which isn't always true e.g. (5,2))
+-- solution: (coset decoding)
 correction :: Int -> [Bool] -> [Bool]
 correction n syndrome =
     if all not syndrome then repeat False
