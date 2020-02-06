@@ -5,12 +5,22 @@ export PATH=$config/bin:$PATH
 
 mkdir -p $config/scores/
 
-size=${1:-5}
+size=${1:-0}
 player=$2
 
 isbot=false
 if ! [[ -t 0 ]]; then
     isbot=true
+fi
+
+if [ "$size" == '0' ]; then
+	while true; do
+		clear
+		echo $size
+		echo
+		((size++))
+		soi $size | hanoi $size
+	done
 fi
 
 if [ "$player" == 'solve' ]; then

@@ -37,7 +37,7 @@ pieces :: Board -> [Piece]
 pieces = map value
 
 type Size = Int
---size :: [a] -> Size
+size :: [a] -> Size
 size = ceiling . sqrt . fromIntegral . length
 
 count :: Piece -> Board -> Int
