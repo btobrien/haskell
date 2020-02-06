@@ -7,9 +7,6 @@ import Control.Applicative
 compose :: [(a -> a)] -> (a -> a)
 compose = foldr (.) id
 
-composeWith :: (b -> a -> a) -> [b] -> (a -> a)
-composeWith f = compose . map f
-
 also f x = (x, f x)
 
 ifhead :: ([a] -> b) -> [a] -> Maybe b

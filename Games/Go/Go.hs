@@ -5,7 +5,7 @@ import Control.Monad
 import Control.Applicative
 
 import Data.List
-import Plus (replaceAt, modifyAt, (<&&>), composeWith)
+import Plus (replaceAt, modifyAt, (<&&>), fold)
 
 data Piece = Black | Empty | White
     deriving (Show, Read, Enum, Eq, Ord)
@@ -64,7 +64,7 @@ clearnotes :: Board -> Board
 clearnotes = map (setnote "")
 
 captureAround :: Int -> Board -> Board
-captureAround i board = composeWith capture (adjacents (size board) i ++ [i]) board
+captureAround i board = fold capture board (adjacents (size board) i ++ [i])
 
 vacants :: [Piece] -> [Coordinate]
 vacants = map location . filter (not . occupied) . zip [0..]
@@ -73,9 +73,9 @@ capture :: Int -> Board -> Board
 capture i board = if (pieces board !! i) == Empty then board else
 	let
 	xs = pieces board
-	captured = prisoners (adjacencies (size board)) (friends xs) (vacants xs) (frontierFrom i)
+	captured = prisoners (connected (size board) (vacants xs)) (expand (friends xs)) (frontierFrom i)
 	in
-	composeWith (place Empty) captured board
+	fold (place Empty) board captured
 
 adjacents :: Size -> Coordinate -> [Coordinate]
 adjacents z i = filter (inbounds z <&&> inline z i) [i+1, i-1, i+z, i-z]
@@ -89,8 +89,8 @@ adjacents z i = filter (inbounds z <&&> inline z i) [i+1, i-1, i+z, i-z]
 adjacent :: Size -> Coordinate -> Coordinate -> Bool
 adjacent z x y = y `elem` adjacents z x
 
-adjacencies :: Size -> [Coordinate] -> [Coordinate] -> [Coordinate]
-adjacencies z xs ys = concatMap (adjacents z) xs `intersect` ys
+connected :: Size -> [Coordinate] -> [Coordinate] -> Bool
+connected z xs ys = not . null $ concatMap (adjacents z) xs `intersect` ys
 
 areFriends :: Size -> Square -> Square -> Bool
 areFriends z x y = piece x == piece y && adjacent z (location x) (location y)
@@ -100,23 +100,21 @@ friends pieces i = let p = (i, pieces !! i)
 	in
 	map location . filter (areFriends (size pieces) p) . zip [0..] $ pieces
 
-prisoners :: Eq a => Connector a -> Expander a -> [a] -> Frontier a -> [a]
-prisoners connector expander escapes soldiers =
+prisoners :: Eq a => ([a] -> Bool) -> (Frontier a -> Frontier a) -> Frontier a -> [a]
+prisoners escaped expand soldiers =
 	if null (frontier soldiers)
 		then visited soldiers
-	else if not . null $ connector (frontier soldiers) escapes
+	else if escaped (frontier soldiers)
 		then []
 	else
-		prisoners connector expander escapes (expand expander soldiers)
+		prisoners escaped expand (expand soldiers)
 	
 type Frontier a = ([a],[a]); visited = fst; frontier = snd
-type Connector a = [a] -> [a] -> [a]
-type Expander a = a -> [a]
 
 frontierFrom :: a -> Frontier a
 frontierFrom x = ([],[x])
 
-expand :: Eq a => Expander a -> Frontier a -> Frontier a
+expand :: Eq a => (a -> [a]) -> Frontier a -> Frontier a
 expand expander (vs,fs) = let vs' = vs ++ fs in (vs', concatMap expander fs \\ vs')
 
 
