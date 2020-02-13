@@ -16,13 +16,13 @@ fi
 
 if [ "$size" == '0' ]; then
 	while true; do
+		((size++))
 		clear
 		printf "\\e[1;30m"
 		printf "level $size : "
 		date
 		printf "\\e[1;0m"
 		echo
-		((size++))
 		soi $size | throttle | hanoi $size
 	done
 fi
