@@ -4,8 +4,9 @@ hanoi: soi hang
 	cp ~/bin/coat ~/.config/hanoi/bin/
 	ghc -o ~/.config/hanoi/bin/show show.hs
 	ghc -o ~/.config/hanoi/bin/move move.hs
-	cp toi.sh ~/.config/hanoi/bin/toi
 	cp hanoi.sh ~/bin/hanoi
+	cp toi.sh ~/.config/hanoi/bin/toi
+	cp throttle.sh ~/.config/hanoi/bin/throttle
 	cp ~/bin/soi ~/.config/hanoi/bin/
 	cp ~/bin/hang ~/.config/hanoi/bin/
 
