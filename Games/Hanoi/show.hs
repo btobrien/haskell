@@ -13,7 +13,8 @@ showboard board = unlines .
     transpose . grid $ board
 
 showdisk :: Int -> Disk -> String
-showdisk width disk = color disk . pad width disk $ replicate disk '.'
+showdisk width disk = color disk . pad width disk $ replicate disk '\x25cf'
+ 
 
 grid :: Board -> [[Disk]]
 grid board = map (topoff size) (disks board)
