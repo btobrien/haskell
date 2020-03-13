@@ -2,6 +2,8 @@
 import Data.Maybe
 import System.Environment
 
+--performance testing
+--main = putStrLn . show . flip div 2 . length . solve' . read . fromMaybe "3" . listToMaybe =<< getArgs
 main = putStrLn . solve . read . fromMaybe "3" . listToMaybe =<< getArgs
 
 solve 1 = "jl"
