@@ -2,59 +2,69 @@
 module Expression where
 
 import Data.List
-import Data.Char (isSpace)
-import Control.Monad
-import Text.ParserCombinators.Parsec
+import Plus
 
-data Expression = Name String | Function String Expression | Application Expression Expression deriving Show
-
-showExpr :: Expression -> String
-showExpr (Name x) = x
-showExpr (Function arg body) = '\\' : arg ++ " -> " ++ show body
-showExpr (Application fn arg) = addParensIf isFunction fn ++ " " ++ addParensIf (not.isName) arg
-    where
-    addParensIf needsParens expr = if needsParens expr then '(' : show expr ++ ")" else show expr
-
--- define equality (a.k.a renaming)
--- define reading (from parsing)
--- implement beta/eta reductions 
--- introduce definitions
+-- deBrujn indices - alphs equivalence
+-- implement eta reductions 
+-- introduce definitions and labeling
 -- preprocess/import definitions
+-- static type checking ?
+-- undefined variables interpreted as string literals?
+-- laziness / dely + side effecst
 
-isName :: Expression -> Bool
-isName (Name _) = True
-isName _ = False
+data Expression = 
+    Variable String |
+    Abstraction String Expression |
+    Application Expression Expression
+    deriving (Show, Eq)
 
-isFunction :: Expression -> Bool
-isFunction (Function _ _) = True
-isFunction _ = False
+freeVariables :: Expression -> [String]
+freeVariables (Variable x) = [x]
+freeVariables (Abstraction var body) = delete var (freeVariables body)
+freeVariables (Application fn arg) = freeVariables fn `union` freeVariables arg
 
-expression :: GenParser Char () Expression
-expression = function <|> application <|> parenthesized expression
+substitute :: String -> Expression -> Expression -> Expression
+substitute name expr (Variable x) = if x == name then expr else Variable x
+substitute name expr (Application fn arg) = Application (substitute name expr fn) (substitute name expr arg)
+substitute name expr (Abstraction var body) = 
+    if var `elem` freeVariables expr
+        then substitute name expr (alphaConvert (shadow var) (Abstraction var body))
+    else if var == name then Abstraction var body
+    else Abstraction var (substitute name expr body)
 
-function :: GenParser Char () Expression
-function = 
-    spaces >> char '\\' >>
-    word >>= \arg ->
-    spaces >> string "->" >> spaces >>
-    expression >>= \body ->
-    return (Function arg body)
+alphaConvert :: String -> Expression -> Expression
+alphaConvert newVar (Abstraction var body) = Abstraction newVar (substitute var (Variable newVar) body)
+alphaConvert _ x = x
 
-application :: GenParser Char () Expression
-application = foldl1 Application <$> expressions
+shadow :: String -> String
+shadow = (++"'")
 
-expressions :: GenParser Char () [Expression]
-expressions = many1 $ spaces >> (parenthesized expression <|> name)
+betaReduce :: Expression -> Expression
+betaReduce (Variable x) = Variable x
+betaReduce (Abstraction var body) = Abstraction var (betaReduce body)
+betaReduce (Application fn arg) = case (betaReduce fn) of
+        Abstraction var body -> betaReduce (substitute var arg body)
+        fn' -> Application fn' (betaReduce arg) 
 
-parenthesized :: GenParser Char () a -> GenParser Char () a
-parenthesized parser = char '(' >> spaces >> parser >>= \x -> spaces >> char ')' >> return x
+-- Applicative Form: Abstraction var body -> let arg' = betaReduce arg in arg' `seq` betaReduceA (substitute var arg' body)
 
-name :: GenParser Char () Expression
-name = Name <$> word
+etaReduce :: Expression -> Expression
+etaReduce (Variable x) = Variable x
+etaReduce (Application fn arg) = Application (etaReduce fn) (etaReduce arg)
+etaReduce (Abstraction var body) = case (etaReduce body) of 
+    Application fn arg -> 
+        if Variable var == arg && not (var `elem` freeVariables fn) then fn 
+        else Abstraction var (Application fn arg)
+    body' -> Abstraction var body'
 
-word :: GenParser Char () String
-word = spaces >> many1 (noneOf " ()")
+reduce = etaReduce . betaReduce
 
-idex = Function "x" (Name "x")
-selfApply = Function "x" (Application (Name "x") (Name "x"))
+alphaNormalize :: Expression -> Expression
+alphaNormalize = id
+
+normalize :: Expression -> Expression
+normalize = alphaNormalize . reduce
+
+(<=>) :: Expression -> Expression -> Bool
+(<=>) = (==) `on` normalize
 
