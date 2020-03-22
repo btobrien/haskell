@@ -1,0 +1,22 @@
+This directory contains a version of the interpreter written in C
+modified so as not to use the Boehm garbage collector but reference
+counting instead. 
+
+This is completely standard ANSI C.  As far as I can see, it has no
+system dependencies at all and should work on practically anything.
+
+To compile use
+
+  $CC $CFLAGS -o unlambda unlambda.c
+
+where $CC is your C compiler (for example, gcc) and $CFLAGS are your
+favorite compilation options (I suggest -O6 -Wall -ansi).
+
+To run, use
+
+  ./unlambda inputfile.unl
+
+where inputfile.unl is the Unlambda source program.  If no file is
+specified, the interpreter will read it from the standard input (in
+which case the program's input, if any, should come after the program
+itself).
