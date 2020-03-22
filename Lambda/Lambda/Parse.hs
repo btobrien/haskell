@@ -1,25 +1,25 @@
 
-module Parse where
+module Lambda.Parse where
 
-import Expression
+import Lambda
 import Control.Monad
 import Text.ParserCombinators.Parsec hiding (Parser)
 import Data.Either
 
 type Parser = GenParser Char ()
 
+instance Show Lambda.Expression where
+    show (Variable x) = x
+    show (Abstraction var body) = '\\' : var ++ " -> " ++ show body
+    show (Application fn arg) = addParensIf isAbstraction fn ++ " " ++ addParensIf (not.isVariable) arg
+        where
+        addParensIf needsParens expr = if needsParens expr then '(' : show expr ++ ")" else show expr
+
 isVariable :: Expression -> Bool
 isVariable (Variable _) = True; isVariable _ = False
 
 isAbstraction :: Expression -> Bool
 isAbstraction (Abstraction _ _) = True; isAbstraction _ = False
-
-showLambda :: Expression -> String
-showLambda (Variable x) = x
-showLambda (Abstraction var body) = '\\' : var ++ " -> " ++ showLambda body
-showLambda (Application fn arg) = addParensIf isAbstraction fn ++ " " ++ addParensIf (not.isVariable) arg
-    where
-    addParensIf needsParens expr = if needsParens expr then '(' : showLambda expr ++ ")" else showLambda expr
 
 -- TODO : better error reporting
 lambda :: String -> Expression
@@ -55,7 +55,7 @@ variable = Variable <$> word
 
 -- why try?
 word :: Parser String
-word = try $ spaces >> many1 (noneOf " ()-\\")
+word = try $ spaces >> many1 (noneOf (" ()-\\"++['1'..'9'])) >>= \x -> spaces >> return x
 
 match :: String -> Parser ()
 match str = spaces >> string str >> spaces
