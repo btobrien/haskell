@@ -50,8 +50,6 @@ dump = mapM_ print
 dumps :: Show a => [[a]] -> IO ()
 dumps xss = putStr . unlines . map (intercalate " ") . (map.map) show $ xss
 
-(.|) = flip (.)
-
 (.:) f g x y = f (g x y) 
 
 p <&&> p' = (&&) <$> p <*> p'; infixl 1 <&&>

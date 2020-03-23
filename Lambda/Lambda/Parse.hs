@@ -15,15 +15,12 @@ instance Show Lambda.Expression where
         where
         addParensIf needsParens expr = if needsParens expr then '(' : show expr ++ ")" else show expr
 
-isVariable :: Expression -> Bool
-isVariable (Variable _) = True; isVariable _ = False
-
-isAbstraction :: Expression -> Bool
-isAbstraction (Abstraction _ _) = True; isAbstraction _ = False
-
 -- TODO : better error reporting
 lambda :: String -> Expression
 lambda = fromRight undefined . parse expression []
+
+evaluate :: String -> Expression
+evaluate = reduce . lambda
 
 expression :: Parser Expression
 expression = abstraction <|> application <|> parenthesized expression
@@ -48,7 +45,7 @@ expressions :: Parser [Expression]
 expressions = many1 $ spaces >> (parenthesized expression <|> variable)
 
 parenthesized :: Parser a -> Parser a
-parenthesized parser = char '(' >> spaces >> parser >>= \x -> spaces >> char ')' >> return x
+parenthesized parser = spaces >> char '(' >> spaces >> parser >>= \x -> spaces >> char ')' >> spaces >> return x
 
 variable :: Parser Expression
 variable = Variable <$> word

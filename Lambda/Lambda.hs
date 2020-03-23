@@ -8,8 +8,13 @@ import Plus
 data Expression = 
     Variable String |
     Abstraction String Expression |
-    Application Expression Expression
-    deriving (Eq)
+    Application Expression Expression deriving (Eq)
+
+isVariable :: Expression -> Bool
+isVariable (Variable _) = True; isVariable _ = False
+
+isAbstraction :: Expression -> Bool
+isAbstraction (Abstraction _ _) = True; isAbstraction _ = False
 
 (<=>) :: Expression -> Expression -> Bool
 (<=>) = (==) `on` normalize
@@ -22,6 +27,8 @@ reducible = id </=> reduce
 
 reduce :: Expression -> Expression
 reduce = etaReduce . betaReduce
+
+(=~=) = (==) `on` alphaNormalize
 
 alphaNormalize :: Expression -> Expression
 alphaNormalize = flip evalState 0 . alpha
