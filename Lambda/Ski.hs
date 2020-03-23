@@ -6,6 +6,7 @@ import Control.Monad
 import Data.Either
 import Lambda hiding (Expression(..))
 import qualified Lambda (Expression(..))
+import Data.List (intersperse, replicate, length)
 
 data Expression = Application Expression Expression | S | K | I | Variable String deriving (Eq)
 
@@ -58,8 +59,8 @@ compile :: Expression -> String
 compile S = "s"
 compile K = "k"
 compile I = "i"
-compile (Variable x) = '[' : x ++ "]"
-compile (Application x y) = '`' : show x ++ show y
+compile (Variable x) = replicate (length x - 1) '`' ++ "." ++ intersperse '.' x
+compile (Application x y) = '`' : compile x ++ compile y
 
 ski :: String -> Expression
 ski = fromRight undefined . parse expression []
@@ -73,4 +74,7 @@ builtin =
     (char 'k' >> return K) <|>
     (char 'i' >> return I)
 
-variable = try $ char '[' >> many1 (noneOf "]") >>= \var -> char ']' >> return (Variable var)
+variable = Variable . (:[]) <$> (char '.' >> anyChar)
+
+
+
