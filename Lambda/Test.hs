@@ -6,7 +6,7 @@ import Text.ParserCombinators.Parsec hiding (Parser)
 import Plus
 
 infixl 9 <::>
-(<::>) = (show . betaReduce) .: Lambda.Application `on` lambda
+(<::>) = (betaReduce) .: Lambda.Application `on` lambda
 
 infixr 0 ||| 
 name ||| x = putStr (take 13 (name ++ repeat ' ')) >> print x
