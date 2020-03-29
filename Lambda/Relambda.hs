@@ -3,18 +3,18 @@ module Relambda where
 
 import Data.Maybe
 import Lambda
+import qualified Ski (compile)
 import Prelude hiding ((.), (<>), id, const)
 import qualified Prelude
 import Plus
 
+compile x = (Ski.compile (reduce x))
+--print x = putStrLn ((\x -> "`r" ++ x) (Ski.compile x))
+print x = putStrLn ((\x -> "`r`" ++ x ++ "i") (Ski.compile x))
 
--- note: down is currently undefined for zero
+str = Variable
 
-var = Variable
-
-print = var
-
-infixr 1 .->
+infixr 2 .->
 (Variable x) .-> y = Abstraction x y
 
 infixl 7 .
@@ -59,3 +59,24 @@ x = Variable "x"
 y = Variable "y"
 z = Variable "z"
 
+
+rec fn = let 
+    vars = abstractions fn
+    fn' = addRecPoint fn
+    in 
+    foldr Abstraction (foldl1 Application (fn' : map Variable vars ++ [fn'])) vars
+
+abstractions :: Lambda.Expression -> [String]
+abstractions (Variable _) = []
+abstractions (Application _ _) = []
+abstractions (Abstraction var body) = var : abstractions body
+
+addRecPoint :: Lambda.Expression -> Lambda.Expression
+addRecPoint (Abstraction var body) = Abstraction var (addRecPoint body)
+addRecPoint x = Abstraction recurseName x
+
+-- note: builtin keyword
+recurse = Variable recurseName
+recurseName = "r"
+
+x ./ y = (x.y.recurse); infixr 3 ./

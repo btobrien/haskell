@@ -6,7 +6,7 @@ import Control.Monad
 import Data.Either
 import Lambda hiding (Expression(..))
 import qualified Lambda (Expression(..))
-import Data.List (intersperse, replicate, length)
+import Data.List (intercalate, replicate, length)
 
 data Expression = Application Expression Expression | S | K | I | Variable String deriving (Eq)
 
@@ -26,8 +26,8 @@ relambda S =
                 (Lambda.Variable "c")))))
 
 unlambda :: Lambda.Expression -> Ski.Expression
-unlambda x | x <=> relambda S = S
-unlambda x | x <=> relambda K = K
+unlambda x | x =~= relambda S = S
+unlambda x | x =~= relambda K = K
 unlambda (Lambda.Variable x) = Variable x
 unlambda (Lambda.Application fn arg) = Application (unlambda fn) (unlambda arg)
 unlambda (Lambda.Abstraction var body) = eliminate var (unlambda body)
@@ -40,9 +40,9 @@ contains name _ = False
 -- TODO : known bug if K shortcut is removed -- investigate
 eliminate :: String -> Ski.Expression -> Ski.Expression
 eliminate var expr@(Application fn arg) = 
-    if not (contains var expr) then Application K expr
-    else Application (Application S (eliminate var fn)) (eliminate var arg)
-    --Application (Application S (eliminate var fn)) (eliminate var arg)
+    --if not (contains var expr) then Application K expr
+    --else Application (Application S (eliminate var fn)) (eliminate var arg)
+    Application (Application S (eliminate var fn)) (eliminate var arg)
 eliminate var x = if Variable var == x then I else Application K x
 
 instance Show Expression where
@@ -55,12 +55,15 @@ instance Show Expression where
         addParens (Application fn arg) = '(' : show (Application fn arg) ++ ")"
         addParens expr = show expr
 
-compile :: Expression -> String
-compile S = "s"
-compile K = "k"
-compile I = "i"
-compile (Variable x) = replicate (length x - 1) '`' ++ "." ++ intersperse '.' x
-compile (Application x y) = '`' : compile x ++ compile y
+prefix :: Expression -> String
+prefix S = "s"
+prefix K = "k"
+prefix I = "i"
+--prefix (Variable x) =  (++"i") . ("`d`."++) . intercalate "`." . map (:[]) . reverse $ x
+prefix (Variable x) =  (++"i") . ("`."++) . intercalate "`." . map (:[]) . reverse $ x
+prefix (Application x y) = '`' : prefix x ++ "`d" ++ prefix y
+
+compile = prefix . unlambda
 
 ski :: String -> Expression
 ski = fromRight undefined . parse expression []

@@ -3,6 +3,7 @@ module Lambda where
 
 import Control.Monad.State
 import Data.List
+import Data.Maybe
 import Plus
 
 data Expression = 
@@ -23,7 +24,7 @@ normalize :: Expression -> Expression
 normalize = alphaNormalize . reduce
 
 reducible :: Expression -> Bool
-reducible = id </=> reduce
+reducible = undefined --id </=> reduce
 
 reduce :: Expression -> Expression
 reduce = etaReduce . betaReduce
@@ -47,9 +48,31 @@ alphaConvert _ x = x
 betaReduce :: Expression -> Expression
 betaReduce (Variable x) = Variable x
 betaReduce (Abstraction var body) = Abstraction var (betaReduce body)
+betaReduce (Application (Abstraction var body) arg) = betaReduce (substitute var arg body)
 betaReduce (Application fn arg) = case betaReduce fn of
-        Abstraction var body -> betaReduce (substitute var arg body)
-        fn' -> Application fn' (betaReduce arg) 
+    Abstraction var body -> betaReduce (substitute var arg body)
+    fn' -> Application fn' (betaReduce arg) 
+
+isBetaReducible :: Expression -> Bool
+isBetaReducible (Variable _) = False
+isBetaReducible (Abstraction _ body) = isBetaReducible body
+isBetaReducible (Application (Abstraction _ _) _) = True
+isBetaReducible (Application fn arg) = isBetaReducible fn || isBetaReducible arg
+
+betaReduce1 :: Expression -> Expression
+betaReduce1 (Variable x) = Variable x
+betaReduce1 (Abstraction var body) = Abstraction var (betaReduce1 body)
+betaReduce1 (Application (Abstraction var body) arg) = substitute var arg body
+betaReduce1 (Application fn arg) = 
+    if isBetaReducible fn
+        then Application (betaReduce1 fn) arg
+        else Application fn (betaReduce1 arg)
+
+betaReductions :: Expression -> [Expression]
+betaReductions = unfoldr $ \expr ->
+    if isBetaReducible expr
+        then let next = betaReduce1 expr in Just (next, next)
+        else Nothing
 
 -- Applicative Form: let arg' = betaReduce arg in arg' `seq` ...
 -- note: because of Haskell's lazy evaluation, argument evaluation must be force with seq
