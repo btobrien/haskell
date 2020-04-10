@@ -8,16 +8,19 @@ import Prelude (($),(-), undefined)
 --main = print (false.str"hello ".str"world!")
 --main = print (false.(self.self).str"abc")
 
-xmain = print $ noi
-main = print $ ko.4.ko
+main = print $ showBool.fun
+xmain = print $ ko.(str"*").ko
 --main = print (hanoi.(1))
 
-fun = greater.(0).(0)
+fun = greater.(0).(1)
 
 showBool = f.->f.str"T".str"F"
 
-noi = hanoi.(7).str"j".str"k".str"l"
+noi = hanoi.(2).str"j".str"k".str"l"
 
-ko = n.->f.-> isZero.n ? str"*" .: str"o".(f.(down.n).f)
+ko = s.->f.-> s.str"\n\n".(f.(s.s).f)
+
+xko = n.->f.-> isZero.n ? str"*" .: str"o".(f.(down.n).f)
+
 -- fails to compile to unlambda
     

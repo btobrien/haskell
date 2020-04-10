@@ -74,6 +74,25 @@ betaReductions = unfoldr $ \expr ->
         then let next = betaReduce1 expr in Just (next, next)
         else Nothing
 
+betaReduceA :: Expression -> Expression
+betaReduceA (Variable x) = Variable x
+betaReduceA (Abstraction var body) = Abstraction var (betaReduceA body)
+betaReduceA (Application fn arg) = 
+    if isBetaReducible arg
+        then Application fn (betaReduceA arg)
+        else Application (betaReduceA fn) arg
+
+betaReductionsA :: Expression -> [Expression]
+betaReductionsA = unfoldr $ \expr ->
+    if isBetaReducible expr
+        then let next = betaReduceA expr in Just (next, next)
+        else Nothing
+
+terms :: Expression -> Int
+terms (Variable _) = 1
+terms (Abstraction _ body) = terms body
+terms (Application fn arg) = terms fn + terms arg
+
 -- Applicative Form: let arg' = betaReduce arg in arg' `seq` ...
 -- note: because of Haskell's lazy evaluation, argument evaluation must be force with seq
 

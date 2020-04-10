@@ -37,12 +37,11 @@ contains name (Variable x) = name == x
 contains name (Application fn arg) = contains name fn || contains name arg
 contains name _ = False
 
--- TODO : known bug if K shortcut is removed -- investigate
 eliminate :: String -> Ski.Expression -> Ski.Expression
 eliminate var expr@(Application fn arg) = 
-    --if not (contains var expr) then Application K expr
-    --else Application (Application S (eliminate var fn)) (eliminate var arg)
-    Application (Application S (eliminate var fn)) (eliminate var arg)
+    if not (contains var expr) then Application K expr
+    else Application (Application S (eliminate var fn)) (eliminate var arg)
+    --Application (Application S (eliminate var fn)) (eliminate var arg)
 eliminate var x = if Variable var == x then I else Application K x
 
 instance Show Expression where
