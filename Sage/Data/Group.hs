@@ -9,16 +9,17 @@ import Control.Monad
 import Utils
 import Data.Prime
 
+cycle :: (Eq a, Monoid a) => a -> [a] 
+cycle g = generate (g<>) mempty 
+
 class (Monoid a, Ord a) => Group a where
     inverse :: a -> a
+    inverse = last . cycle -- obviously not efficient & only works if finite
     identity :: a
     identity = mempty
 
-(><) :: Group a => a -> a -> a
-(><) = flip (<>)
-
 productOf :: Group a => [a] -> a
-productOf = foldl' (><) identity
+productOf = foldl' (flip (<>)) identity
 
 square :: Monoid a => a -> a
 square x = x <> x
@@ -71,20 +72,19 @@ closed xs = closure xs <~ (identity : sort xs)
 close :: Group a => [a] -> [a]
 close = until closed closure . normalize 
 
-closedOrder :: Group a => [a] -> Int
-closedOrder xs = convergence . map length . iterate closure $ identity : xs ++ map inverse xs
-
 gen :: Group a => [a] -> [a]
 gen xs = close . (identity:) $ xs ++ map inverse xs
 
 gens :: Group a => [a] -> [a] -> Bool
-gens gs hs = closedOrder hs == length gs
+gens gs hs = length (gen hs) == length gs
 
+-- sort on order to prefer "smaller" generators
+-- so cayley diagrams simpler
 minGen :: Group a => [a] -> [a]
 minGen gs = head .
     filter (gens gs) .
-    powerset' .
-    reverse $
+    choices .
+    sortOn order $
     delete identity gs
 
 decompose :: Group a => [a] -> a -> [(Int,a)]
@@ -105,9 +105,6 @@ isGroup = not.null
     <&&> invertible 
     <&&> closed
 
-cycle :: Group a => a -> [a] 
-cycle g = generate (g<>) identity 
-
 generates :: Group a => [a] -> a -> Bool
 generates xs x = length xs == length (cycle x)
 
@@ -120,6 +117,7 @@ nonGenerators xs = filter (not . generates xs) xs
 --should be sorted by order??
 cycles :: Group a => [a] -> [[a]] 
 cycles =
+    sortOn length .
     normalize .
     map (normalize . delete identity . cycle) .
     delete identity .
@@ -140,17 +138,17 @@ setsFrom f hs gs = normalize [ sort (f g hs) | g <- gs]
 conjugate :: Group a => a -> a -> a
 conjugate x y = inverse x <> y <> x
 
-cosetsr :: Group a => [a] -> [a] -> [[a]] 
-cosetsr = setsFrom (\g -> map (<>g))
+rcosets :: Group a => [a] -> [a] -> [[a]] 
+rcosets = setsFrom (\g -> map (<>g))
 
-cosetsl :: Group a => [a] -> [a] -> [[a]] 
-cosetsl = setsFrom (\g -> map (g<>))
+lcosets :: Group a => [a] -> [a] -> [[a]] 
+lcosets = setsFrom (\g -> map (g<>))
 
 cosets :: Group a => [a] -> [a] -> [[a]] 
-cosets = cosetsl
+cosets = lcosets
 
-matchingCosets :: Group a => [a] -> [a] -> Bool
-matchingCosets hs gs = cosetsr hs gs == cosetsl hs gs
+normal :: Group a => [a] -> [a] -> Bool
+normal hs gs = rcosets hs gs == lcosets hs gs
 
 conjugacies :: Group a => [a] -> [a] -> [[a]]
 conjugacies = setsFrom (\g -> map (conjugate g))

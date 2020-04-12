@@ -1,11 +1,6 @@
 
 module Sage where
 
-import Prelude hiding (cycle, (^))
-import Data.Semigroup
-import Utils
-import Data.Semigroup
-import Data.Monoid hiding ((<>))
 import Data.Group
 import Data.Group.Modulo
 import Data.Group.Units
@@ -13,6 +8,13 @@ import Data.Group.Permutation
 import Data.Group.Dihedral (reflect, dihedral, dihedralOn)
 import qualified Data.Group.Dihedral as Dih
 import Data.Group.NonGroup
+import Data.Group.Xml
+
+import Prelude hiding (cycle, (^))
+import Data.Semigroup
+import Utils
+import Data.Semigroup
+import Data.Monoid hiding ((<>))
 import Control.Applicative
 --import Data.Group.Table
 

@@ -20,12 +20,6 @@ isUnit m = fromMaybe True $ do
 
 newtype Unit = U Modulo; val (U x) = x
 
-umodify :: (Modulo -> Modulo) -> Unit -> Unit
-umodify f (U x) = U (f x)
-
-ucompose :: (Modulo -> Modulo -> Modulo) -> Unit -> Unit -> Unit
-ucompose f (U x) (U y) = U (f x y)
-
 instance Enum Unit where
     fromEnum = fromEnum . val
     toEnum = undefined
@@ -36,15 +30,15 @@ instance Eq Unit
     where (==) = (==) `on` val
 instance Ord Unit
     where compare = compare `on` val
-instance Semigroup Unit  where (<>) = ucompose (*)
+instance Semigroup Unit  where (<>) = U .: (*) `on` val
 instance Monoid Unit where
     mempty = U (fromInteger 1)
     mappend = (<>)
 instance Group Unit where
-    inverse x = fromMaybe identity $ do
-        n <- baseof (val x)
-        let x' = fst $ euclidean (fromEnum (val x)) n
-        return . U . modulo n . fromInteger . toInteger $ x'
+    --inverse x = fromMaybe identity $ do
+        --n <- baseof (val x)
+        --let x' = fst $ euclidean (fromEnum (val x)) n
+        --return . U . modulo n . fromInteger . toInteger $ x'
 
 unit :: Enum a => Int -> a -> Unit
 unit n x = let u = modulo n x in if isUnit u then U u else undefined

@@ -11,6 +11,9 @@ import qualified Data.Set as Set
 import Data.Set (Set)
 import Control.Monad.State
 
+(><) :: Applicative f => f a -> f b -> f (a,b)
+gs >< hs = (,) <$> gs <*> hs
+
 generate :: Eq a => (a -> a) -> a -> [a]
 generate g a = (a:) . takeWhile (/=a) . tail $ iterate g a
 
@@ -106,6 +109,9 @@ infixr 5 +|+
 normalize :: Ord a => [a] -> [a] 
 normalize = Set.toList . Set.fromList
 
+choices :: [a] -> [[a]]
+choices xs = concatMap (flip choose xs) [0..(length xs)]
+    
 choose :: Int -> [a] -> [[a]]
 choose 0 _      = [[]]
 choose _ []     = []
