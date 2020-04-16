@@ -8,19 +8,25 @@ import Prelude (($),(-), undefined)
 --main = print (false.str"hello ".str"world!")
 --main = print (false.(self.self).str"abc")
 
-main = print $ showBool.fun
-xmain = print $ ko.(str"*").ko
---main = print (hanoi.(1))
+main = run $ xnoi
 
-fun = greater.(0).(1)
+ko = n.-> isZero.n ? const.put"*" .: (f.-> put"o" -. (f.(down.n).f))
+xko = f.->n.-> isZero.n ? put"*" .: put"o" -. (f.f.(down.n))
 
-showBool = f.->f.str"T".str"F"
+noi = hnoi.hnoi.put"j".put"k".put"l"
+xnoi = n.->xhnoi.put"j".put"k".put"l".n.xhnoi
 
-noi = hanoi.(2).str"j".str"k".str"l"
+hnoi = f.->x.->y.->z.->n.->
+    isZero.(down.n) ? (z-.x)
+    .: (f.f.y.x.z.(down.n)) -. (z-.x) -. (f.f.x.z.y.(down.n))
 
-ko = s.->f.-> s.str"\n\n".(f.(s.s).f)
+-- why is it important to pull the recursive abstraction point under the base check?
+-- partial answer: avoids abstraction-elimination shortcut bug
+xhnoi = x.->y.->z.->n.->
+    isZero.(down.n) ? const.(z-.x)
+    .: (f.-> (f.y.x.z.(down.n).f) -. (z-.x) -. (f.x.z.y.(down.n).f))
 
-xko = n.->f.-> isZero.n ? str"*" .: str"o".(f.(down.n).f)
-
--- fails to compile to unlambda
-    
+--lists and other datastructures
+--read chars into nums
+--and nums into chars
+-- decompile unlambda programs

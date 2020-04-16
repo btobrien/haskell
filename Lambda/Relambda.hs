@@ -3,16 +3,12 @@ module Relambda where
 
 import Data.Maybe
 import Lambda
-import qualified Ski (compile)
 import Prelude hiding ((.), (<>), id, const)
 import qualified Prelude
 import Plus
 
-compile x = (Ski.compile (reduce x))
---print x = putStrLn ((\x -> "`r" ++ x) (Ski.compile x))
-print x = putStrLn ((\x -> "`r`" ++ x ++ "i") (Ski.compile x))
-
-str = Variable
+put = Variable
+var = Variable
 
 infixr 2 .->
 (Variable x) .-> y = Abstraction x y
@@ -24,6 +20,12 @@ infixl 7 .
 infixl 8 <>
 (Abstraction var body) <> arg = substitute var arg body
 x <> y = Lambda.Application x y
+
+g -. f = var"arg".->g.(f.var"arg")
+
+(?) = (.); infixr 4 ?
+(.:) = (.); infixr 3 .:
+(.|) = (.); infixr 1 .|
 
 instance Show Lambda.Expression where
     show (Variable x) = x
@@ -59,24 +61,25 @@ x = Variable "x"
 y = Variable "y"
 z = Variable "z"
 
+getChurch =
+    "````sii" ++
+    "``s`k`s`kc" ++
+    "``s``s`ks``s`k`s`ks``s`k`s`kk" ++
+    "``s`k`s`kd``s`k`s`kk``s``s`ks``s``s`kskk`k" ++
+    "`d``s`k`s``s`ks``s`kk" ++
+    "``?0`?1`?2`?3`?4`?5`?6`?7`?8`?9" ++
+    "```sii" ++
+    "``s`k`s`kc" ++
+    "``s``s`ks``s`kk``s`ks``s`kk``s`kd``s`kk``sii`k``ss`k`k`" ++
+    "```sii" ++
+    "``s`k`s`k`s`kc" ++
+    "``s``s`ks``s`k`s`ks``s`k`s`kk``s`k`s`ks``s`k`s`kk" ++
+    "``s`k`s`kd``s`k`s`kk``s``s`ks``s``s`kskk`k`s``s`ksk" ++
+    "`k``s`k`ss``s`kkk" ++
+    "`ki" ++
+    "i" ++
+    "`s`k" ++
+    "``s``s`ksk```s``s`kski``s``s`ksk``s``s`kski" ++
+    "`k``s`d`k`s`@ ? k" ++
+    "`ki"
 
-rec fn = let 
-    vars = abstractions fn
-    fn' = addRecPoint fn
-    in 
-    foldr Abstraction (foldl1 Application (fn' : map Variable vars ++ [fn'])) vars
-
-abstractions :: Lambda.Expression -> [String]
-abstractions (Variable _) = []
-abstractions (Application _ _) = []
-abstractions (Abstraction var body) = var : abstractions body
-
-addRecPoint :: Lambda.Expression -> Lambda.Expression
-addRecPoint (Abstraction var body) = Abstraction var (addRecPoint body)
-addRecPoint x = Abstraction recurseName x
-
--- note: builtin keyword
-recurse = Variable recurseName
-recurseName = "r"
-
-x ./ y = (x.y.recurse); infixr 3 ./

@@ -25,10 +25,6 @@ not = x.-> x.false.true
 and = x.->y.->x.y.false
 or = x.->y.->x.true.y
 
-(?) = (.); infixr 4 ?
-(.:) = (.); infixr 3 .:
-(.|) = (.); infixr 1 .|
-
 zero = id
 isZero = n.->n.first
 
@@ -61,7 +57,9 @@ less = x.->y.->greater.y.x
 
 equal = x.->y.-> greater.x.y ? false .: less.x.y ? false .: true
 
-hanoi = recursive .| f.->n.->x.->y.->z.->
-    isZero.(down.n) ? x.z
-    .: f.(down.n).x.z.y.(x.z).(f.(down.n).y.x.z)
+hanoi = hanoi'.put"j".put"k".put"l"
+-- unlambda can't seem to evaluate the recursive combinator...nbd?
+hanoi' = recursive .| f.->x.->y.->z.->n.->
+    isZero.(down.n) ? (z-.x)
+    .: (f.y.x.z.(down.n)) -. (z-.x) -. (f.x.z.y.(down.n))
 

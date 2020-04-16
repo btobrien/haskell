@@ -58,9 +58,8 @@ prefix :: Expression -> String
 prefix S = "s"
 prefix K = "k"
 prefix I = "i"
---prefix (Variable x) =  (++"i") . ("`d`."++) . intercalate "`." . map (:[]) . reverse $ x
-prefix (Variable x) =  (++"i") . ("`."++) . intercalate "`." . map (:[]) . reverse $ x
-prefix (Application x y) = '`' : prefix x ++ "`d" ++ prefix y
+prefix (Variable x) =  '.' : take 1 x -- support composition of mult letters
+prefix (Application x y) = '`' : prefix x ++ "" ++ prefix y
 
 compile = prefix . unlambda
 

@@ -4,6 +4,7 @@ module Relambda.Label where
 import Lambda
 import Relambda
 import Relambda.Prelude
+import qualified Ski (compile)
 import Prelude hiding ((.), (<>), not, id, const, subtract)
 import qualified Prelude 
 import Data.List (last)
@@ -28,7 +29,12 @@ label (Abstraction var body) = Abstraction var (label body)
 label (Application fn arg) = Application (label fn) (label arg)
 -- implement traversable -- we've seen this patter a lot
 
-run expr = label (last (betaReductions expr))
+evaluate expr = label (last (betaReductions expr))
+
+run prog =
+    putStrLn (
+        (\compiled -> "`r``" ++ compiled ++ getChurch ++ "i")
+        (Ski.compile (last (betaReductions (c.->prog.(c.up.zero))))))
 
 instance Num Expression where
     fromInteger = num
