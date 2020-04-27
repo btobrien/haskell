@@ -19,10 +19,10 @@ infixl 7 .
 
 -- substitution operator
 infixl 8 .<
-(Abstraction var body) <> arg = substitute var arg body
+(Abstraction var body) <> arg = Lambda.reduce $ substitute var arg body
 x .< y = Lambda.Application x y
 
--- _arg_ must be reserved
+-- _arg_ is reserved
 infixr 5 -.
 g -. f = var"_arg_".->g.(f.var"_arg_")
 infixr 5 -..
@@ -30,13 +30,16 @@ g -.. f = var"_arg1_".->var"_arg2_".->g.(f.var"_arg1_".var"_arg2_")
 infixr 5 -...
 g -... f = var"_arg1_".->var"_arg2_".->var"_arg3_".->g.(f.var"_arg1_".var"_arg2_".var"_arg3_")
 
-(?) = (.); infixr 4 ?
+(?) = (.); infixr 5 ?
 (.:) = (.); infixr 3 .:
 
 base = x.->y.->x
 recurse = Variable "_rec_"
 
-infixr 3 .|
+infixr 4 .?
+basecase .? recursive = basecase .: (recurse.->recursive)
+
+infixl 4 .|
 basecase .| recursive = basecase .: (recurse.->recursive)
 
 instance Show Lambda.Expression where

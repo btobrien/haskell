@@ -4,7 +4,16 @@ import Relambda.Label
 import Relambda.Prelude
 import Prelude (($),(-), undefined)
 
-main = run $ n.->ko.n.ko
+main = run $ reduce xnoi
+
+mt = n.->showDigit.(mod.(10).n)
+tko = n.->
+    less.(10).n ? const.(showDigit.n) .:
+    (r.-> showDigit.(mod.(10).n) -. (r.(div.(10).n).r))
+-- can't seem to be lam reduced
+showtest = x.->
+    less.(10).x ? base.(showDigit.x) .:
+    (r.->showDigit.(mod.(10).x) -. (r.(div.(10).x).r))
 
 -- think Relambda is just going to make "tight" abstraction necessary
 ko = n.-> isZero.n ? const.str"*" .: (r.-> str"o" -. (r.(down.n).r))

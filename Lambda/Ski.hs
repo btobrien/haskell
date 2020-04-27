@@ -40,6 +40,7 @@ contains name _ = False
 eliminate :: String -> Ski.Expression -> Ski.Expression
 eliminate var expr@(Application fn arg) = 
     if not (contains var expr) then Application K expr
+    else if arg == (Variable var) && not (contains var fn) then fn
     else Application (Application S (eliminate var fn)) (eliminate var arg)
     --Application (Application S (eliminate var fn)) (eliminate var arg)
 eliminate var x = if Variable var == x then I else Application K x

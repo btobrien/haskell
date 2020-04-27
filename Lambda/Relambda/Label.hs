@@ -28,7 +28,8 @@ label (Abstraction var body) = Abstraction var (label body)
 label (Application fn arg) = Application (label fn) (label arg)
 -- implement traversable -- we've seen this patter a lot
 
-evaluate expr = label (last (betaReductions expr))
+evaluate expr = label (Lambda.reduce expr)
+reduce = Lambda.reduce
 
 isNumber :: Lambda.Expression -> Maybe Int
 isNumber expr | expr =~= id = Just 0

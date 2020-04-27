@@ -16,7 +16,7 @@ isUnit = const.(const.true)
 selectUnit = rec $ s.->m.->c.-> 
     let found = isUnit.m.c
     in
-    and.(isZero.s).found ? c .| (0)
+    base.(and.(isZero.s).found) ? c .| (0)
     --recurse.(found.(down.s).s).m.(up.c).recurse
 
 powerMod = rec $ n.->x.->e.->
@@ -36,3 +36,4 @@ generate = s.->p.->q.->
     in pair.(modulo.n.e).(modulo.n.d)
 
 code = e.->x.-> powerMod.(baseOf.e).x.(value.e)
+

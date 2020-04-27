@@ -27,7 +27,7 @@ reducible :: Expression -> Bool
 reducible = undefined --id </=> reduce
 
 reduce :: Expression -> Expression
-reduce = etaReduce . betaReduce
+reduce = etaReduce . betaReduceA
 
 (=~=) = (==) `on` alphaNormalize
 
@@ -45,10 +45,16 @@ alphaConvert :: String -> Expression -> Expression
 alphaConvert newVar (Abstraction var body) = Abstraction newVar (substitute var (Variable newVar) body)
 alphaConvert _ x = x
 
+betaReduceA :: Expression -> Expression
+betaReduceA (Variable x) = Variable x
+betaReduceA (Abstraction var body) = Abstraction var (betaReduce body)
+betaReduceA (Application fn arg) = case betaReduce fn of
+    Abstraction var body -> betaReduce (substitute var (betaReduce arg) body)
+    fn' -> Application fn' (betaReduce arg) 
+
 betaReduce :: Expression -> Expression
 betaReduce (Variable x) = Variable x
 betaReduce (Abstraction var body) = Abstraction var (betaReduce body)
-betaReduce (Application (Abstraction var body) arg) = betaReduce (substitute var arg body)
 betaReduce (Application fn arg) = case betaReduce fn of
     Abstraction var body -> betaReduce (substitute var arg body)
     fn' -> Application fn' (betaReduce arg) 

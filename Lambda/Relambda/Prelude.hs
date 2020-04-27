@@ -20,6 +20,7 @@ second = x.->y.->y
 get = f.->x.->x.f
 fst = x.->x.first
 snd = x.->x.second
+flip = f.->x.->y.->f.y.x
 
 true = first
 false = second
@@ -69,10 +70,10 @@ div = m.->n.->rec.m.n.rec
         (f.->up.(f.m.(n-m).f))
         --order of addition is perfomant
 
-mod = m.->n.->rec.m.n.rec
+mod = m.->n.->rec.n.m.rec
     where
-    rec = m.->n.-> 
-        less.m.n ? const.n .:
+    rec = n.->m.-> 
+        greater.n.m ? const.n .:
         (r.->r.m.(n - m).r)
 
 less = x.->y.->rec.x.y.rec
@@ -97,6 +98,7 @@ equal = x.->y.->rec.x.y.rec
         .: isZero.y ? const.false
         .: (f.->f.(down.x).(down.y).f)
 
+-- can't seem to be lam reduced
 showNum = rec $ n.->
     less.(10).n ? base.(showDigit.n) .|
     showDigit.(mod.(10).n) -. recurse.(div.(10).n).recurse
@@ -126,5 +128,5 @@ instance Prelude.Num Lambda.Expression where
 run prog =
     putStrLn (
         (\compiled -> "`r``" ++ compiled ++ getChurch ++ "i")
-        (Ski.compile (Lambda.etaReduce (c.->prog.(c.up.zero)))))
+        (Ski.compile ((c.->prog.(c.up.zero)))))
 
