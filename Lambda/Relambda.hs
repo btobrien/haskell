@@ -3,16 +3,13 @@ module Relambda where
 
 import Data.Maybe
 import Lambda
-import qualified Ski (compile)
 import Prelude hiding ((.), (<>), id, const)
 import qualified Prelude
-import Plus
+import qualified Plus
 
-compile x = (Ski.compile (reduce x))
---print x = putStrLn ((\x -> "`r" ++ x) (Ski.compile x))
-print x = putStrLn ((\x -> "`r`" ++ x ++ "i") (Ski.compile x))
-
+put = Variable
 str = Variable
+var = Variable
 
 infixr 2 .->
 (Variable x) .-> y = Abstraction x y
@@ -21,9 +18,29 @@ infixl 7 .
 (.) = Lambda.Application 
 
 -- substitution operator
-infixl 8 <>
-(Abstraction var body) <> arg = substitute var arg body
-x <> y = Lambda.Application x y
+infixl 8 .<
+(Abstraction var body) <> arg = Lambda.reduce $ substitute var arg body
+x .< y = Lambda.Application x y
+
+-- _arg_ is reserved
+infixr 5 -.
+g -. f = var"_arg_".->g.(f.var"_arg_")
+infixr 5 -..
+g -.. f = var"_arg1_".->var"_arg2_".->g.(f.var"_arg1_".var"_arg2_")
+infixr 5 -...
+g -... f = var"_arg1_".->var"_arg2_".->var"_arg3_".->g.(f.var"_arg1_".var"_arg2_".var"_arg3_")
+
+(?) = (.); infixr 5 ?
+(.:) = (.); infixr 3 .:
+
+base = x.->y.->x
+recurse = Variable "_rec_"
+
+infixr 4 .?
+basecase .? recursive = basecase .: (recurse.->recursive)
+
+infixl 4 .|
+basecase .| recursive = basecase .: (recurse.->recursive)
 
 instance Show Lambda.Expression where
     show (Variable x) = x
@@ -31,6 +48,16 @@ instance Show Lambda.Expression where
     show (Application fn arg) = addParensIf isAbstraction fn ++ "." ++ addParensIf (\ex -> Prelude.not (isVariable ex)) arg
         where
         addParensIf needsParens expr = if needsParens expr then '(' : show expr ++ ")" else show expr
+
+rec fn =
+    let vars = abstractions fn
+    in
+    foldr Abstraction (foldl1 Application (fn : map Variable vars ++ [fn])) vars
+
+abstractions :: Lambda.Expression -> [String]   
+abstractions (Variable _) = []  
+abstractions (Application _ _) = [] 
+abstractions (Abstraction var body) = var : abstractions body
 
 a = Variable "a"
 b = Variable "b"
@@ -59,24 +86,25 @@ x = Variable "x"
 y = Variable "y"
 z = Variable "z"
 
+getChurch =
+    "````sii" ++
+    "``s`k`s`kc" ++
+    "``s``s`ks``s`k`s`ks``s`k`s`kk" ++
+    "``s`k`s`kd``s`k`s`kk``s``s`ks``s``s`kskk`k" ++
+    "`d``s`k`s``s`ks``s`kk" ++
+    "``?0`?1`?2`?3`?4`?5`?6`?7`?8`?9" ++
+    "```sii" ++
+    "``s`k`s`kc" ++
+    "``s``s`ks``s`kk``s`ks``s`kk``s`kd``s`kk``sii`k``ss`k`k`" ++
+    "```sii" ++
+    "``s`k`s`k`s`kc" ++
+    "``s``s`ks``s`k`s`ks``s`k`s`kk``s`k`s`ks``s`k`s`kk" ++
+    "``s`k`s`kd``s`k`s`kk``s``s`ks``s``s`kskk`k`s``s`ksk" ++
+    "`k``s`k`ss``s`kkk" ++
+    "`ki" ++
+    "i" ++
+    "`s`k" ++
+    "``s``s`ksk```s``s`kski``s``s`ksk``s``s`kski" ++
+    "`k``s`d`k`s`@? k" ++
+    "`ki"
 
-rec fn = let 
-    vars = abstractions fn
-    fn' = addRecPoint fn
-    in 
-    foldr Abstraction (foldl1 Application (fn' : map Variable vars ++ [fn'])) vars
-
-abstractions :: Lambda.Expression -> [String]
-abstractions (Variable _) = []
-abstractions (Application _ _) = []
-abstractions (Abstraction var body) = var : abstractions body
-
-addRecPoint :: Lambda.Expression -> Lambda.Expression
-addRecPoint (Abstraction var body) = Abstraction var (addRecPoint body)
-addRecPoint x = Abstraction recurseName x
-
--- note: builtin keyword
-recurse = Variable recurseName
-recurseName = "r"
-
-x ./ y = (x.y.recurse); infixr 3 ./

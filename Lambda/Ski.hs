@@ -40,6 +40,7 @@ contains name _ = False
 eliminate :: String -> Ski.Expression -> Ski.Expression
 eliminate var expr@(Application fn arg) = 
     if not (contains var expr) then Application K expr
+    else if arg == (Variable var) && not (contains var fn) then fn
     else Application (Application S (eliminate var fn)) (eliminate var arg)
     --Application (Application S (eliminate var fn)) (eliminate var arg)
 eliminate var x = if Variable var == x then I else Application K x
@@ -58,9 +59,8 @@ prefix :: Expression -> String
 prefix S = "s"
 prefix K = "k"
 prefix I = "i"
---prefix (Variable x) =  (++"i") . ("`d`."++) . intercalate "`." . map (:[]) . reverse $ x
-prefix (Variable x) =  (++"i") . ("`."++) . intercalate "`." . map (:[]) . reverse $ x
-prefix (Application x y) = '`' : prefix x ++ "`d" ++ prefix y
+prefix (Variable x) =  '.' : take 1 x -- support composition of mult letters
+prefix (Application x y) = '`' : prefix x ++ "" ++ prefix y
 
 compile = prefix . unlambda
 

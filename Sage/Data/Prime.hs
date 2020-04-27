@@ -64,3 +64,10 @@ primes = sieve [2..]
     where
     sieve [] = []
     sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
+
+hofs :: [Int]
+hofs = 1 : from 1 [1] 1 where
+    from x banned n =
+        if [n] == take 1 banned
+        then from x (drop 1 banned) (n+1)
+        else let x' = (x+n) in x' : from x' (banned++[x']) (n+1)
