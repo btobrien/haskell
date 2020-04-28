@@ -19,7 +19,7 @@ vector<Layer> layersOf(int width) {
 }
 
 bool overlap(const Layer& x, const Layer& y) {
-    int i = x.size() - 1
+    int i = x.size() - 1;
     int j = y.size() - 1;
     int balance = x[i--];
     while (i >= 0 || j >= 0) {
@@ -33,8 +33,7 @@ bool overlap(const Layer& x, const Layer& y) {
 using Graph = vector<vector<int>>;
 
 Graph toGraph(const vector<Layer>& layers) {
-    // note: the overlap relation is symmetric and anti-reflexive
-    // (i.e. a layer never overlap itself)
+    // note: the overlap relation is both symmetric and reflexive
     // => add 2 at a time and start j at i+1
     Graph graph(layers.size());
     for (int i = 0; i < layers.size(); i++) {
