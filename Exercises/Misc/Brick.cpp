@@ -47,8 +47,8 @@ Graph toGraph(const vector<Layer>& layers) {
     return graph;
 }
 
-int numWalks(int length, const Graph& graph) {
-    vector<int> counts(graph.size(), 1);
+uint64_t numWalks(int length, const Graph& graph) {
+    vector<uint64_t> counts(graph.size(), 1);
     for (int n = 0; n < length - 1; n++) {
         auto previous_counts = counts;
         for (int i = 0; i < graph.size(); i++) {
@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
     int width = std::stoi(std::string(argv[1]));
     int height = std::stoi(std::string(argv[2]));
     std::cout << numWalks(height, toGraph(layersOf(width))) << std::endl;
+    std::cout << static_cast<uint64_t>(-1) << std::endl;
 }
 
 
