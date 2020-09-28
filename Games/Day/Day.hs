@@ -2,8 +2,6 @@ import System.Random
 import System.Exit
 import Data.Char
 
-also f x = (x, f x)
-
 type Day = Int 
 type Year = Int
 data Month = January | February | March | April | May | June | July | August | September | October | November | December
@@ -56,7 +54,7 @@ selectDay :: Int -> Day
 selectDay = (`mod`30)
 
 selectMonth :: Int -> Month
-selectMonth = toEnum . (`mod` (fromEnum December + 1))
+selectMonth i = let months = [January ..December] in months !! (i `mod` length months)
 
 selectYear :: Int -> Year
 selectYear = (startYear+) . (`mod`(endYear - startYear))
@@ -64,9 +62,12 @@ selectYear = (startYear+) . (`mod`(endYear - startYear))
 readDays :: String -> [Int]
 readDays = map read . lines
 
+showDate :: Date -> String
+showDate = tail . map (\c -> if isAlphaNum c then c else ' ') . show 
+
 main = do
     date <- fmap selectDate (randomRIO (minBound,maxBound))
-    print date
+    putStrLn (showDate date)
     numFailures <- fmap (length . (takeWhile (/= dayOf date)) . readDays) getContents
     if numFailures == 0
         then exitSuccess
