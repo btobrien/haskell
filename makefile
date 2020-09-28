@@ -10,6 +10,9 @@ tile : coat
 hanoi : coat
 	make hanoi -C Games/Hanoi
 
+day :
+	make day -C Games/Day
+
 coat :
 	make coat -C Utils
 
