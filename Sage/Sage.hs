@@ -5,10 +5,11 @@ import Data.Group
 import Data.Group.Modulo
 import Data.Group.Units
 import Data.Group.Permutation
-import Data.Group.Dihedral (reflect, dihedral, dihedralOn)
+import Data.Group.Dihedral (reflect, dihedral, dihedralOn, dih)
 import qualified Data.Group.Dihedral as Dih
 import Data.Group.NonGroup
 import Data.Group.Xml
+import Data.Group.Isomorphism
 
 import Prelude hiding (cycle, (^))
 import Data.Semigroup
@@ -20,6 +21,9 @@ import Control.Applicative
 
 (...) :: Semigroup a => a -> a -> a
 (...) = flip (<>)
+
+e :: Group a => a
+e = identity
 
 infixr 5 <:
 (<:) :: Ord a => Cycle a -> Permutation a -> Permutation a

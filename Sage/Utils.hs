@@ -48,6 +48,9 @@ neighbors = zip <$> id <*> tail
 equal :: Eq a => (a,a) -> Bool
 equal = uncurry (==)
 
+equalOn :: Eq b => (a -> b) -> (a,a) -> Bool
+equalOn f = uncurry ((==) `on` f)
+
 sorted :: Ord a => [a] -> Bool
 sorted = all (uncurry (<=)) . neighbors
 
@@ -79,6 +82,10 @@ squash nothingTest x = if nothingTest x then Nothing else Just x
 
 convergence :: Eq a => [a] -> a
 convergence = fst . head . dropWhile (not.equal) . neighbors
+
+convergenceOn :: Eq b => (a -> b) -> [a] -> a
+convergenceOn f = fst . head .
+    dropWhile (not . equalOn f) . neighbors
 
 (.:) f g x y = f (g x y) 
 
@@ -158,6 +165,9 @@ __ = putStrLn ""
 ____ = putStr
 
 pad n xs = take n $ xs ++ repeat ' ' 
+
+normalizeOn :: Ord b => (a -> b) -> [a] -> [a]
+normalizeOn f = map head . groupOn f . sortOn f
 
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
 groupOn = groupBy . ((==)`on`)

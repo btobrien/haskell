@@ -39,8 +39,8 @@ cayleyTable xs = (<$>xs) . (<>) <$> xs
 selfinv :: Group a => a -> Bool
 selfinv = inverts <$> id <*> id
 
-preserving :: Group a => [a] -> Bool
-preserving xs = 
+identifiable :: Group a => [a] -> Bool
+identifiable xs = 
     xs == map (identity<>) xs &&
     xs == map (<>identity) xs
 
@@ -101,7 +101,7 @@ isGroup :: Group a => [a] -> Bool
 isGroup = not.null
     <&&> checkid
     <&&> uniqueness
-    <&&> preserving 
+    <&&> identifiable 
     <&&> invertible 
     <&&> closed
 
@@ -114,7 +114,7 @@ generators = filter <$> generates <*> id
 nonGenerators :: Group a => [a] -> [a]
 nonGenerators xs = filter (not . generates xs) xs
 
---should be sorted by order??
+-- includes non-primitive cycles
 cycles :: Group a => [a] -> [[a]] 
 cycles =
     sortOn length .
@@ -122,6 +122,10 @@ cycles =
     map (normalize . delete identity . cycle) .
     delete identity .
     nonGenerators
+
+primitiveCycles :: Group a => [a] -> [[a]] 
+primitiveCycles xs = let cs = cycles xs in
+    reverse $ filter (not . (\x -> any (isSubsequenceOf x) (delete x cs))) cs 
 
 subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
 subgroupsWithOrder withOrder xs = do
