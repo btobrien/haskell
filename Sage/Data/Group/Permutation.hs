@@ -10,7 +10,7 @@ import Utils
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
 import Data.Group
-import Data.Hashable (hash)
+--import Data.Hashable (hash)
 
 factorial :: Int -> Int
 factorial 0 = 1
@@ -110,7 +110,8 @@ alternating = filter Data.Group.Permutation.alternate . symmetric
 mash :: Eq a => Int -> [a] -> [a]
 mash n = unfoldr $ \xs ->
     if null xs then Nothing
-    else let xs' = rotate n xs in Just (head xs' , mash (hash . show $ n) (tail xs'))
+    else let xs' = rotate n xs in Just (head xs' , mash n (tail xs'))
+    --else let xs' = rotate n xs in Just (head xs' , mash (hash . show $ n) (tail xs'))
 
 selectPermutation :: Ord a => Int -> [a] -> Permutation a
 selectPermutation = toPermutation .: mash
