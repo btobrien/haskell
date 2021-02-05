@@ -17,7 +17,6 @@ append = rec $ x.->l.->
     isempty.l ? base.(pair.x.empty) .| 
     pair.(l.first).(recurse.x.(l.second).recurse)
 
-
 hofs = rec $ v.->l.->d.->n.->
     isZero.n ? base.v .:
     equal.d.(head.l) .|
@@ -26,3 +25,4 @@ hofs = rec $ v.->l.->d.->n.->
 
 main = run $ showNum -. (reduce hofs.(1).(pair.(1).empty).(1))
 
+-- space must end number
