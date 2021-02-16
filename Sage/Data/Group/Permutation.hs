@@ -92,7 +92,7 @@ elements = sort . nub . concat . cyclesOf
 mapping :: Ord a => Permutation a -> [(a,a)]
 mapping = map <$> also.apply <*> elements
 
-symmetric :: Int -> [Permutation Int]
+symmetric :: Integer -> [Permutation Integer]
 symmetric n = Data.Group.Permutation.permutations [1..n]
 
 transpositions :: Ord a => Permutation a -> [(a,a)]
@@ -101,7 +101,7 @@ transpositions = concat . map neighbors . cyclesOf
 alternate :: Ord a => Permutation a -> Bool
 alternate = Prelude.even . sum . map (length.tail) . cyclesOf
 
-alternating :: Int -> [Permutation Int]
+alternating :: Integer -> [Permutation Integer]
 alternating = filter Data.Group.Permutation.alternate . symmetric
 
 --alternates :: Ord a => Permutation a -> [Permutation a]

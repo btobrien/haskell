@@ -4,9 +4,7 @@
 
 
 -- cryptographic
-type Hash = Key
-hash :: Hash -> [Char] -> Modulo
-hash = encode
+type Hash = String -> String
 
 type User = Key
 
@@ -21,7 +19,7 @@ data Block = Block { previous :: Hash, content :: Signed Transaction, proof :: I
 
 validBlock :: Block -> Bool
 validBlock = undefined
-suceess :: Modulo -> Bool
+suceess:: Modulo -> Bool
 suceess = undefined
 
 

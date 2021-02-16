@@ -129,12 +129,12 @@ primitiveCycles xs = let cs = cycles xs in
 
 subgroupsWithOrder :: Group a => (Int -> Bool) -> [a] -> [[a]]
 subgroupsWithOrder withOrder xs = do
-    d <- filter withOrder $ divisors (length xs)
+    d <- filter withOrder . map fromInteger $ divisors (toInteger . length $ xs)
     g <- filter closed $ pack (d-1) (cycles xs)
     return (identity:g)
 
 subgroups :: Group a => [a] -> [[a]]
-subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
+subgroups xs = let n = fromInteger $ largestDivisor (toInteger(length xs)) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
 
 setsFrom :: Group a => (a -> [a] -> [a]) -> [a] -> [a] -> [[a]] 
 setsFrom f hs gs = normalize [ sort (f g hs) | g <- gs]
@@ -166,7 +166,7 @@ isCyclic = any <$> generates <*> id
 order :: Group a => a -> Int 
 order = length . cycle
 
-hasOrderOf :: Int -> [a] -> Bool
+--hasOrderOf :: Int -> [a] -> Bool
 hasOrderOf n = (n==).length
 
 commute :: Group a => a -> a -> Bool

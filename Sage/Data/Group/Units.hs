@@ -13,9 +13,10 @@ import Data.Monoid hiding ((<>))
 import Data.Maybe
 import Data.Prime
 
+isUnit :: Modulo -> Bool
 isUnit m = fromMaybe True $ do
     b <- baseof m
-    let x = fromEnum m
+    let x = toInteger m
     return $ x /= 0 && gcd x b == 1
 
 newtype Unit = U Modulo; val (U x) = x
@@ -34,23 +35,42 @@ instance Semigroup Unit  where (<>) = U .: (*) `on` val
 instance Monoid Unit where
     mempty = U (fromInteger 1)
     mappend = (<>)
-instance Group Unit where
-    --inverse x = fromMaybe identity $ do
-        --n <- baseof (val x)
-        --let x' = fst $ euclidean (fromEnum (val x)) n
-        --return . U . modulo n . fromInteger . toInteger $ x'
 
-unit :: Enum a => Int -> a -> Unit
+instance Group Unit where
+    inverse x = fromMaybe identity $ do
+        n <- baseof . val $ x
+        let x' = fst $ euclidean (toInteger (val x)) n
+        return . U . modulo n $ x'
+
+instance Num Unit where
+    (+) = U .: (+) `on` val
+    (-) = U .: (-) `on` val
+    negate = U . negate . val
+    fromInteger = U . fromInteger
+    (*) = U .: (*) `on` val
+    abs = U . abs . val
+    signum = U . signum . val
+
+instance Real Unit where
+    toRational = toRational . val
+
+instance Integral Unit where
+    quotRem x y = (quot x y, rem x y)
+    quot = U .: quot `on` val
+    rem = U .: rem `on` val
+    toInteger = toInteger . val
+
+--unit :: Enum a => Integer -> a -> Unit
 unit n x = let u = modulo n x in if isUnit u then U u else undefined
 
 units n = [U m | m <- modulos n, isUnit m]
 
-psuedoprime :: Int -> Bool
+psuedoprime :: Integer -> Bool
 psuedoprime n = if even n then False else
     identity == (unit n 2) .^ (n-1)
 
 psuedoprimeBase :: Unit -> Bool
 psuedoprimeBase b = let n = baseOf (val b) in identity == b .^ (n-1)
 
-carmichael :: Int -> Bool
+carmichael :: Integer -> Bool
 carmichael = all psuedoprimeBase . units

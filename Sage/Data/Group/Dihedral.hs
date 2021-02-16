@@ -54,20 +54,20 @@ instance Group Dihedral where
 
 rotate n = Di (False, n)
 reflect = Di (True, identity)
-dih n = (<>) (Di (False, modulo n 0))
+dih n = (<>) (Di (False, modulo (toInteger n) 0))
 
-dihedral :: Int -> [Dihedral]
+dihedral :: Integer -> [Dihedral]
 dihedral n = gen [dih n (rotate 1), dih n reflect]
 
-rotateOn :: Int -> Permutation Int
+rotateOn :: Integer -> Permutation Integer
 rotateOn n = P [[1..n]]
 
-reflectOn :: Int -> Permutation Int
+reflectOn :: Integer -> Permutation Integer
 reflectOn n = reduce
-    . map (\x -> [fromEnum x, (fromEnum.inverse) x])
-    . take (n`div`2)
+    . map (\x -> [toInteger x, (toInteger.inverse) x])
+    . take (fromInteger n`div`2)
     $ modulos n
 
-dihedralOn :: Int -> [Permutation Int]
+dihedralOn :: Integer -> [Permutation Integer]
 dihedralOn n = gen [rotateOn n, reflectOn n]
 

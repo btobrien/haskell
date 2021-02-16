@@ -29,15 +29,18 @@ instance Num Bool where
     abs = id
     signum = undefined
 
-data Modulo = M { baseof :: Maybe Int, valueof :: Int }
+data Modulo = M { baseof :: Maybe Integer, valueof :: Integer }
+
+evaluate :: Modulo -> Integer
+evaluate x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
 
 forceModulo :: Modulo -> Modulo
-forceModulo m = M (baseof m) (fromEnum m)
+forceModulo m = M (baseof m) (fromMaybe (valueof m) $ mod (valueof m) <$> baseof m)
 
-modify :: (Int -> Int) -> Modulo -> Modulo
+modify :: (Integer -> Integer) -> Modulo -> Modulo
 modify f x = x { valueof = f.valueof $ x }
 
-compose :: (Int -> Int -> Int) -> Modulo -> Modulo -> Modulo
+compose :: (Integer -> Integer -> Integer) -> Modulo -> Modulo -> Modulo
 compose f x y = M (checkbase x y) (valueof x `f` valueof y)
     where
     checkbase a b = if (baseof a <==> baseof b) == (Just False)
@@ -45,33 +48,33 @@ compose f x y = M (checkbase x y) (valueof x `f` valueof y)
         else baseof a <|> baseof b
 
 instance Enum Modulo where
-    fromEnum x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
-    toEnum = M Nothing
+    fromEnum x = fromInteger . fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
+    toEnum = M Nothing . toInteger
 instance Show Modulo where
-    show = show.fromEnum
+    show = show.evaluate
 instance Eq Modulo
-    where (==) = (==) `on` fromEnum
+    where (==) = (==) `on` evaluate
 instance Ord Modulo
-    where compare = compare `on` fromEnum
+    where compare = compare `on` evaluate
 
 instance Num Modulo where
     (+) = compose (+)
     (-) = compose (-)
     negate = modify negate
-    fromInteger = toEnum . fromIntegral
-    -- important to force evaluation
+    fromInteger = M Nothing
+    -- important to force evaluation -- why??..
     (*) = compose (*) `on` forceModulo
     abs = id
     signum = undefined
 
 instance Real Modulo where
-    toRational = toRational . fromEnum
+    toRational = toRational . evaluate
 
 instance Integral Modulo where
     quotRem x y = (quot x y, rem x y)
     quot = compose quot `on` forceModulo
     rem = compose rem `on` forceModulo
-    toInteger = toInteger . fromEnum
+    toInteger = evaluate
 
 instance Semigroup Modulo  where (<>) = (+)
 instance Monoid Modulo where
@@ -79,11 +82,10 @@ instance Monoid Modulo where
     mappend = (<>)
 instance Group Modulo where inverse = negate
 
-modulos :: Int -> [Modulo]
-modulos n = map (M (Just n)) [0..(n-1)]
+modulos :: Integer -> [Modulo]
+modulos n = map (M (Just n)) [0..n-1]
 
-modulo :: Enum a => Int -> a -> Modulo
-modulo n = M (Just n) . fromEnum
+modulo n = M (Just n) . toInteger
 
 baseOf = fromJust . baseof
 

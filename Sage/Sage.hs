@@ -35,7 +35,7 @@ s = reflect
 infixr 0 ||| 
 name ||| x = putStr (take 13 (name ++ repeat ' ')) >> print x
 
-test :: Int -> IO ()
+test :: Integer -> IO ()
 test n = do
     "bool"         |||  isGroup <$> [[True,False]]
     "modulos"      |||  isGroup . modulos <$> [2..n]
