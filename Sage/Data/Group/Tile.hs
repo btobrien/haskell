@@ -4,7 +4,7 @@ module Data.Group.Tile where
 import Data.List
 import Control.Applicative
 import Data.Maybe
-import Data.Hashable (hash)
+import Data.Char
 
 import Utils
 import Data.Group.Permutation
@@ -47,7 +47,7 @@ shuffleBoard c board = shuffledTiles
     selectLevel board n = selectEvenPermutation n [1..(count board - 1)]
     shuffledTiles =
         chunksOf (width board) .
-        shuffleAround cursor (selectLevel board . hash $ [c]) .
+        shuffleAround cursor (selectLevel board . ord $ c) .
         concat $ board
 
 initialize :: Char -> (Int,Int) -> Board
