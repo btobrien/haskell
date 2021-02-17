@@ -76,7 +76,7 @@ fromPermutation :: Ord a => Permutation a -> ([a] -> [a])
 fromPermutation p = map (apply p)
 
 shuffle :: Ord a => Permutation Int -> [a] -> [a]
-shuffle p xs = sortOn' (apply p . indexIn xs) $ xs
+shuffle p xs = sortOn (apply p . indexIn xs) $ xs
     where
     indexIn xs x = (+1) . fromJust $ elemIndex x xs
 

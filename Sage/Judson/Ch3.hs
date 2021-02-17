@@ -53,13 +53,13 @@ q35 = dump $ subgroups (dihedral 3)
 q36 = dump $ subgroups (dihedral 4)
 
 q45 = all isGroup .
-	map (uncurry intersect) . pairs $ subgroups (symmetric 3)
+    map (uncurry intersect) . pairs $ subgroups (symmetric 3)
 
 q46 = all isGroup .
     map (uncurry union) . pairs $ subgroups (symmetric 3)
 
 q47 = all isGroup .
-		map (uncurry products) . pairs $ subgroups (symmetric 3)
+        map (uncurry products) . pairs $ subgroups (symmetric 3)
 
 q52 = check (dihedral 3) (not.isAbelian) $
     all (not.isAbelian) . subgroups

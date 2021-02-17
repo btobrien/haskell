@@ -7,7 +7,7 @@ import Data.Matrix
 import Control.Applicative ((<$>))
 
 import Data.Group.Modulo ()
-import Utils (binary, padBinary, sortOn', chunksOf, (.:))
+import Utils (binary, padBinary, chunksOf, (.:))
 import Data.Algabraic.Code (Code)
 
 readBinary :: String -> [Bool]

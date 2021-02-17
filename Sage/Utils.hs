@@ -172,13 +172,12 @@ normalizeOn f = map head . groupOn f . sortOn f
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
 groupOn = groupBy . ((==)`on`)
 
--- we have more efficient impls of these
-sortOn' :: Ord b => (a -> b) -> [a] -> [a]
-sortOn' = sortBy . (compare `on`)
+-- we have more efficient impls of this
+--sortOn' :: Ord b => (a -> b) -> [a] -> [a]
+--sortOn' = sortBy . (compare `on`)
 
--- we have more efficient impls of these
 selectOn :: Ord b => (a -> b) -> [a] -> a
-selectOn = head .: sortOn'
+selectOn = head .: sortOn
 
 select :: Int -> [a] -> a
 select seed xs = cycle xs !! seed

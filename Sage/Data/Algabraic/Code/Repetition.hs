@@ -1,9 +1,9 @@
 
 module Data.Algabraic.Code.Repetition where
 
-import Data.List (sort, group)
+import Data.List (sortOn, sort, group)
 
-import Utils (sortOn', chunksOf, (.:))
+import Utils (chunksOf, (.:))
 import Data.Algabraic.Code (Code)
 
 repetition :: Int -> Code
@@ -17,5 +17,5 @@ decode = map mostFrequent .: chunksOf
     where
     mostFrequent =
         head . head .
-        sortOn' (negate . length) .
+        sortOn (negate . length) .
         group . sort
