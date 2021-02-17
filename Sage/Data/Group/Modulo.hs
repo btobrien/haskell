@@ -24,7 +24,6 @@ instance Num Bool where
     (-) = (+)
     negate = id
     fromInteger = toEnum . fromIntegral
-    -- important to force evaluation
     (*) = (&&)
     abs = id
     signum = undefined
@@ -32,10 +31,10 @@ instance Num Bool where
 data Modulo = M { baseof :: Maybe Integer, valueof :: Integer }
 
 evaluate :: Modulo -> Integer
-evaluate x = fromMaybe (valueof x) $ mod (valueof x) <$> baseof x
+evaluate m = fromMaybe (valueof m) $ mod (valueof m) <$> baseof m
 
 forceModulo :: Modulo -> Modulo
-forceModulo m = M (baseof m) (fromMaybe (valueof m) $ mod (valueof m) <$> baseof m)
+forceModulo m = M (baseof m) . evaluate $ m
 
 modify :: (Integer -> Integer) -> Modulo -> Modulo
 modify f x = x { valueof = f.valueof $ x }
@@ -62,7 +61,7 @@ instance Num Modulo where
     (-) = compose (-)
     negate = modify negate
     fromInteger = M Nothing
-    -- important to force evaluation -- why??..
+    -- important to force evaluation 
     (*) = compose (*) `on` forceModulo
     abs = id
     signum = undefined
