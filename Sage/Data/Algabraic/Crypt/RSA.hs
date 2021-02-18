@@ -1,5 +1,5 @@
 
-module Data.Crypt.RSA where
+module Data.Algabraic.Crypt.RSA where
 
 import Utils ((<==>))
 import Data.Prime (factor, prime, primes, isPrime, totient)
@@ -10,7 +10,6 @@ import Data.Char (ord)
 
 import Data.Digest.Pure.SHA as SHA
 import Data.ByteString.Lazy (ByteString, pack)
-import Data.Word
 
 import Numeric (showHex, showIntAtBase)
 
@@ -65,17 +64,17 @@ hash n = sha n . pack . map (fromIntegral . ord)
     sha 512 = integerDigest . sha512
     sha _ = error "sha: length not supported"
 
-type Signature = (ShaId,PublicKey,Integer)
+type Signed a = (a,(Integer,PublicKey,ShaId))
 
 -- how to handle if hash digest is too large?
-sign :: ShaId -> (PublicKey,PrivateKey) -> String -> (String,Signature)
+sign :: Show a => ShaId -> (PublicKey,PrivateKey) -> a -> Signed a
 sign sha (pk,sk) message = let
-    signature = encode sk . hash sha $ message
+    signature = encode sk . hash sha . show $ message
     in
-    (message,(sha,pk,signature))
+    (message,(signature,pk,sha))
 
-verify :: (String,Signature) -> Bool
-verify (message,(sha,pk,signature)) = hash sha message == decode pk signature
+verify :: Show a => Signed a -> Bool
+verify (message,(signature,pk,sha)) = hash sha (show message) == decode pk signature
 
 checkSign :: ShaId -> (PublicKey,PrivateKey) -> String -> Bool
 checkSign sha (pk,sk) = verify . sign sha (pk,sk) 

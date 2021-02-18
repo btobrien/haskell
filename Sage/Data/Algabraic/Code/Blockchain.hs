@@ -1,25 +1,41 @@
 
+import Data.Digest.Pure.SHA as SHA
+import Data.ByteString.Lazy (ByteString, pack)
+import Data.Word
+
+import qualified Data.Algabraic.Crypt.RSA as RSA
 
 -- how many transactions must occur before a transaction is believed?
+-- fixed public key
+-- fixed sha id
+-- address book
+--
+-- how to recover (&publish) chain if lost?
 
+sign :: Show a => RSA.Key -> a -> Signed a
+sign key = RSA.sign (RSA.hash 256) (RSA.defaultEncoder, key)
 
--- cryptographic
-type Hash = String -> String
+type Hash = String
+type UserId = Integer
 
-type User = Key
+data Transaction = T { timestamp :: Integer, receiver :: UserId, amount :: Integer }
 
-type Transaction = ((User,User),Int)
+data Block = B { previous :: Hash, transaction :: Signed Transaction, proof :: String }
 
-data Signature = (User,Int)
-data Signed a = S a Signature 
+verify :: (Block,Block) -> Bool
+verify = undefined
 
-authentic :: Signed Int -> Bool
+type Chain a = Tree a
 
-data Block = Block { previous :: Hash, content :: Signed Transaction, proof :: Int }
+append :: Block -> Chain Block -> Chain Block
+append block chain = let
+    prevHash = show . head chain
 
-validBlock :: Block -> Bool
-validBlock = undefined
-suceess:: Modulo -> Bool
-suceess = undefined
+trim :: Chain Block -> Chain Block
+trim
+balance :: UserId -> [Block] -> Integer
+balance = undefined
 
+balances :: [Block] -> [(UserId,Integer)]
+balances = undefined
 
