@@ -66,7 +66,6 @@ hash n = sha n . pack . map (fromIntegral . ord)
 
 type Signed a = (a,(Integer,PublicKey,ShaId))
 
--- how to handle if hash digest is too large?
 sign :: Show a => ShaId -> (PublicKey,PrivateKey) -> a -> Signed a
 sign sha (pk,sk) message = let
     signature = encode sk . hash sha . show $ message
