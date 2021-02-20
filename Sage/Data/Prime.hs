@@ -62,7 +62,6 @@ totient n = let ps = nub (factor n) in product (map (subtract 1) ps) * (n `div` 
 primes :: [Integer]
 primes = sieve [2..]
     where
-    sieve [] = []
     sieve (x:xs) = (x:) . sieve . filter (not . divisibleBy x) $ xs
 
 prime :: Int -> Integer
