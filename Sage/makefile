@@ -8,6 +8,7 @@ sage :
 
 crypt :
 	ghc Data/Algabraic/Crypt/RSA.hs
+	ghc Data/Algabraic/Crypt/Blockchain.hs
 
 code :
 	ghc -o ~/.config/noise/bin/code Data/Algabraic/Code/code.hs

@@ -43,8 +43,8 @@ encode e x = toInteger $ (modulo (baseOf e) x) ^ e
 decode :: Key -> Integer -> Integer
 decode = encode
 
-checkRsa :: Integer -> (Key,Key) -> Bool
-checkRsa k (e,d) = all (decode d . encode e <==> id) [0,(baseOf e `div` k)..((baseOf e)-1)]
+keycheck :: Integer -> (Key,Key) -> Bool
+keycheck k (e,d) = all (decode d . encode e <==> id) [0,(baseOf e `div` k)..((baseOf e)-1)]
 
 crack :: Key -> Key
 crack e = let n = baseOf e in
@@ -55,8 +55,8 @@ crack e = let n = baseOf e in
 --
 
 type ShaId = Int
-hash :: ShaId -> String -> Integer
-hash n = sha n . pack . map (fromIntegral . ord)
+hash :: Show a => ShaId -> a -> Integer
+hash n = sha n . pack . map (fromIntegral . ord) . show
     where
     sha 1   = integerDigest . sha1
     sha 224 = integerDigest . sha224
@@ -64,21 +64,18 @@ hash n = sha n . pack . map (fromIntegral . ord)
     sha 512 = integerDigest . sha512
     sha _ = error "sha: length not supported"
 
-type Signed a = (a,(Integer,PublicKey,ShaId))
+type Signed a = (a,(Integer,PublicKey,ShaId)); valueOf = fst; signatureOf = snd
 
 sign :: Show a => ShaId -> (PublicKey,PrivateKey) -> a -> Signed a
 sign sha (pk,sk) message = let
-    signature = encode sk . hash sha . show $ message
+    signature = encode sk . hash sha $ message
     in
     (message,(signature,pk,sha))
 
 verify :: Show a => Signed a -> Bool
-verify (message,(signature,pk,sha)) = hash sha (show message) == decode pk signature
-
-checkSign :: ShaId -> (PublicKey,PrivateKey) -> String -> Bool
-checkSign sha (pk,sk) = verify . sign sha (pk,sk) 
+verify (message,(signature,pk,sha)) = hash sha message == decode pk signature
 
 example :: String -> Bool
-example = checkSign 256 (generate defaultEncoder (rsa 100))
+example = verify . sign 256 (generate defaultEncoder (rsa 100))
 
 rsa 100 = [37975227936943673922808872755445627854565536638199,40094690950920881030683735292761468389214899724061]
