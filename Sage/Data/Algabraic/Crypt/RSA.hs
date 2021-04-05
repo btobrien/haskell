@@ -16,7 +16,7 @@ import Numeric (showHex, showIntAtBase)
 type Prime = Integer
 type Key = Modulo
 type PublicKey = Key
-type PrivateKey = Modulo
+type PrivateKey = Key
 
 -- a commonly used encoder because of short bit length and small hamming-weight
 defaultEncoder :: Prime
@@ -65,6 +65,9 @@ hash n = sha n . pack . map (fromIntegral . ord) . show
     sha _ = error "sha: length not supported"
 
 type Signed a = (a,(Integer,PublicKey,ShaId)); valueOf = fst; signatureOf = snd
+
+signer :: Signed a -> Integer
+signer = baseOf . (\(_,x,_) -> x) . signatureOf
 
 sign :: Show a => ShaId -> (PublicKey,PrivateKey) -> a -> Signed a
 sign sha (pk,sk) message = let

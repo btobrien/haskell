@@ -9,7 +9,7 @@ import Data.Map.Strict (Map, insert, adjust)
 
 import Utils ((.:))
 import qualified Data.Algabraic.Crypt.RSA as RSA
-import Data.Algabraic.Crypt.RSA (Signed, signatureOf, valueOf)
+import Data.Algabraic.Crypt.RSA (Signed, signatureOf, valueOf, signer)
 
 import Data.Group.Modulo (Modulo, modulo, baseOf)
 
@@ -17,65 +17,78 @@ import Data.Group.Modulo (Modulo, modulo, baseOf)
 -- fixed public key
 -- fixed sha id
 -- address book
+-- 0 hash is root
 --
 -- how to recover (&publish) chain if lost?
-
+-- "future" timestamps should be filtered, but outside/before this pure implementation
 
 sha = 256
+hash :: Show a => a -> BlockHash
+hash = RSA.hash sha
 
 sign :: Show a => RSA.Key -> a -> RSA.Signed a
 sign key = RSA.sign sha (modulo RSA.defaultEncoder (baseOf key), key)
 
-proven :: Show a => a -> Bool
-proven = (<2^8) . RSA.hash sha
-
 type BlockHash = Integer
 type User = Integer
 
-data Transaction = T { transactionTimeOf :: Integer, receiverOf :: User, amountOf :: Integer }
+data Transaction = T { timeOf :: Integer, receiverOf :: User, amountOf :: Integer }
     deriving (Eq, Ord, Show)
 
-data Block = B { blockTimeOf :: Integer, parentOf :: BlockHash, transactionOf :: RSA.Signed Transaction, proofOf :: String }
+data Block = B { blockTimeOf :: Integer, parentOf :: BlockHash, transactionOf :: RSA.Signed Transaction, proofOf :: Int }
     deriving (Eq, Ord, Show)
 
 type Chain a = Map BlockHash (Signed a,[BlockHash])
 
-hash :: Signed Block -> BlockHash
-hash = RSA.hash sha . valueOf
+proven :: Show a => a -> Bool
+proven = (<2^8) . hash
 
--- don't store rejects...no pow
--- first path, store as little as possible
+prove :: Block -> Block
+prove = until proven incrementProof
+    where
+    incrementProof block = block { proofOf = proofOf block + 1 }
+
+-- don't store rejects...no pow..could lead to dos attack
+-- first pass, store as little as possible
 
 -- append
 -- balance-request
--- block-request (encapsulates whether it's been cleared?)
-
 
 valid :: Chain Block -> Signed Block -> Bool
-valid chain block =
-    RSA.verify block 
-    &&
-    Map.notMember key chain
-    &&
-    (blockTimeOf . valueOf $ block) > transactionTimeOf (valueOf . transactionOf . valueOf $ block)
-    -- &&
-    --transactionTimeOf (transactionOf block)
-    where 
-    key = hash block
+valid chain block = 
+    validBlock block &&
+    Map.notMember (hash block) chain &&
+    let parentHash = (parentOf . valueOf $ block) in parentHash == 0 || case (Map.lookup parentHash chain) of
+        Nothing -> False
+        Just (parent,_) -> validLink (valueOf parent) (valueOf block)
 
-addChild :: BlockHash -> (Signed Block, [BlockHash]) -> (Signed Block, [BlockHash])
-addChild child (block,children) = (block, child:children)
+validBlock :: Signed Block -> Bool
+validBlock block =
+    proven block &&
+    RSA.verify block &&
+    RSA.verify (transactionOf . valueOf $ block) &&
+    blockTimeOf (valueOf block) > timeOf (valueOf . transactionOf . valueOf $ block) &&
+    let
+    verifer = signer block
+    sender = signer (transactionOf . valueOf $ block)
+    receiver = receiverOf . valueOf . transactionOf . valueOf $ block
+    in
+    verifer /= sender && verifer /= receiver && sender /= receiver
+
+-- assumes parent hash matches
+validLink :: Block -> Block -> Bool
+validLink parent child =
+    blockTimeOf parent < blockTimeOf child 
+    &&
+    (timeOf.valueOf) (transactionOf parent) < (timeOf.valueOf) (transactionOf child)
 
 append :: Signed Block -> Chain Block -> Maybe (Chain Block)
-append block chain =
+append block chain = let key = hash block in
     if valid chain block
-    then Just . insert key (block,[]) . adjust (addChild key) parent $ chain
+    then Just . insert key (block,[]) . adjust (addChild key) (parentOf . valueOf $ block) $ chain
     else Nothing
-    where
-    parent = fromJust . Map.lookup . parentOf . valueOf $ block
-    key = hash block
-
--- 0 hash is root
+    where 
+    addChild child (block,children) = (block, child:children)
 
 balances :: BlockHash -> Chain Block -> Map User Integer
 balances = undefined
@@ -86,6 +99,6 @@ balances = undefined
 balance :: User -> BlockHash -> Chain Block -> Integer
 balance user = undefined --Map.lookup .: balances 
 
--- how to check if block was confirmed
---
--- hash collision???
+replay :: Chain Block -> [Block]
+replay = undefined
+
