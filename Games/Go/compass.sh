@@ -10,7 +10,7 @@ x=0
 y=0
 
 stty -echo
-trap "stty echo" EXIT
+trap "tput cud $((size - 1)); stty echo" EXIT
 
 function move 
 {

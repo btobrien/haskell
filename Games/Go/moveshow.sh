@@ -1,4 +1,4 @@
 #!/bin/bash
-source ~/.config/go/import
+export PATH="~/.config/go/bin":"$PATH"
 
 move $1 | show
