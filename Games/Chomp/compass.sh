@@ -18,14 +18,16 @@ x=0
 y=0
 
 tput cnorm
+tail -1 <positions | tr -d '[' | tr -d ']' | tr ',' '\n' >edges
+
 stty -echo
 trap "kill $!; tput cud $((height - 1)); stty echo" EXIT 
 
 function move 
 {
     tput civis
-    [ $x == '0' ] || tput cub $((2 * x))
-    [ $y == '0' ] || tput cuu $y
+    (( $x == '0' )) || tput cub $((2 * x))
+    (( $y == '0' )) || tput cuu $y
 	before=$(wc -l <positions)
 	echo "$1 ($x,$y)" >>moves
 	after=$(wc -l <positions)
@@ -38,16 +40,26 @@ function move
 	tail -1 <positions | $map | grep . 
 	height=$(tail -1 <positions | $map | grep . | wc -l)
     tput cuu $height
-    [ $y == '0' ] || tput cud $y
-    [ $x == '0' ] || tput cuf $((2 * x))
+    (( $y == 0 )) || tput cud $y
+    (( $x == 0 )) || tput cuf $((2 * x))
     tput cnorm
+	tail -1 <positions | tr -d '[' | tr -d ']' | tr ',' '\n' >edges
 }
 
 function down
 {
     tput cud1
-    [ $x == '0' ] || tput cuf $((2 * x))
-    ((y++))
+    if (( $x != 0 )); then
+        tput cuf $((2 * x))
+        edge=$(head -n$x <edges | tail -n1)
+        if (( $edge == $y )); then
+            tput cuu1
+        else
+            ((y++))
+        fi
+    else
+        ((y++))
+    fi
 }
 
 function up
@@ -66,23 +78,28 @@ function right
 {
     tput cuf 2
     ((x++))
+    edge=$(head -n$x <edges | tail -n1)
+    if (( $edge < $y )); then
+        tput cub 2
+        ((x--))
+    fi
 }
 
 while read -n1 char; do
     if [ "$char" == 'j' ]; then
-        [ $y == $((height - 1)) ] || down
+        (( $y == $((height - 1)) )) || down
     elif [ "$char" == 'k' ]; then
-        [ $y == '0' ] || up
+        (( $y == '0' )) || up
     elif [ "$char" == 'h' ]; then
-        [ $x == '0' ] || left
+        (( $x == '0' )) || left
     elif [ "$char" == 'l' ]; then
-        [ $x == $((width - 1)) ] || right
+        (( $x == $((width - 1)) )) || right
     elif [ "$char" == '' ]; then
         move 'z'
-    elif [ "$char" == 'F' ]; then
-        move 'm'
-		sleep '0.3'
-        move 'g'
+    elif [ "$char" == 'v' ]; then #response
+        move 'n'
+		sleep '0.5'
+        move 'w'
     else
         move "$char"
     fi

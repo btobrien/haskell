@@ -2,6 +2,7 @@
 import System.IO
 import System.Environment
 import Data.Maybe (fromMaybe, listToMaybe)
+import qualified Data.Char as Char
 import Data.Char (ord)
 
 import Chomp
@@ -25,19 +26,24 @@ parse (cmd:move:_) = (cmd, read move)
 parse _ = ("?", undefined)
 
 exec :: String -> Move -> (State -> State)
-exec "m" = modify . flip move
-exec "g" = modify . const playWinner
-exec "f" = modify . playIfWinner
+exec "n" = modify . flip move
+exec "w" = modify . const playWinner
+exec "g" = modify . playIfWinner
 exec "o" = const undo
 exec "O" = const (undo.undo)
 exec "i" = const redo
 exec "I" = const (redo.redo)
 exec "?" = const id
-exec c =  modify . (const.playRandom) c
+exec str | str == "N" || Char.isNumber (head str) = modify . \move -> playWinnerOrRandom (str ++ show move) -- could also seed from redo stack
+exec str = modify . \move -> playRandom (str ++ show move)
+
 --exec "x" = -- highlight red
 --exec "c" = -- highlight green
---exec "c" = -- show answers
+--exec "a" = -- show answers
 
+
+-- highlights
+-- play random but prefer "smaller" moves
 
 playRandom :: String -> (Bar -> Bar)
 playRandom char bar = let
@@ -47,12 +53,16 @@ playRandom char bar = let
     else move bar . (moves bar!!) . (`mod`length (moves bar)) . sum . map ord $ char
 
 modify :: (Bar -> Bar) -> (State -> State)
-modify f state@(ys,(x:xs)) = 
+modify f state@(_,(x:xs)) = 
     if f x == x then state else ([], f x : x : xs)
 
---playWinnerOrRandom :: String -> (Bar -> Bar)
+playWinnerOrRandom :: String -> (Bar -> Bar)
+playWinnerOrRandom str bar = let
+    new = playWinner bar
+    in
+    if new == bar then playRandom str bar else new
 
-playIfWinner :: Move-> Bar -> Bar
+playIfWinner :: Move -> Bar -> Bar
 playIfWinner x bar = let 
     new = move bar x
     in
@@ -61,8 +71,9 @@ playIfWinner x bar = let
         else bar
 
 playWinner :: Bar -> Bar
-playWinner = \bar -> fromMaybe bar . fmap (move bar) . listToMaybe . winners' $ bar
+playWinner = \bar -> fromMaybe bar . fmap (move bar) . listToMaybe . winningMoves $ bar
 
+-- zipper pattern
 undo :: State -> State
 undo (ys,[x]) = (ys,[x])
 undo (ys,x:xs) = (x:ys,xs)

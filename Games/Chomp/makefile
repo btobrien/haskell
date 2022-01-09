@@ -3,7 +3,7 @@ all : chomp
 
 config :
 	mkdir -p ~/.config/chomp/bin
-	cp import.sh ~/.config/chomp/import
+	cp import.sh ~/.config/chomp/import.sh
 
 chomp : config compass
 	ghc -O2 -o ~/.config/chomp/bin/move move.hs

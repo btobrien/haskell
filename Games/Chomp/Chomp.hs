@@ -3,12 +3,7 @@ module Chomp where
 
 import Plus 
 
-import Data.Maybe (isNothing, listToMaybe)
-import Data.List (sortOn, delete, nub)
-import Data.Bool (bool)
-
-import Data.Map (Map)
---import qualified Data.Map as Map
+import Data.List (delete)
 
 import qualified Data.Map.Lazy as Map
 import Data.Map.Lazy ((!), Map)
@@ -16,63 +11,60 @@ import Data.Map.Lazy ((!), Map)
 type Bar = [Int]
 type Move = (Int,Int)
 
-winning' :: Bar -> Bool
-winning' [1] = False
-winning' bar = or . map (not . winning' . move bar) . moves $ bar
+rectangle :: (Int,Int) -> Bar
+rectangle = uncurry replicate
 
-winners' :: Bar -> [Move]
-winners' [1] = []
-winners' bar = map fst . filter (null.snd) . (map.fmap) winners' . subars $ bar
-    where
-    subars = also . move <<$>> moves
-                
+valid :: Bar -> Bool
+valid = and . (zipWith (>=) <*> tail)
+
 move :: Bar -> Move -> Bar
 move = flip $ \(x,y) -> take x <++> filter (>0) . map (min y) . drop x
 
 moves :: Bar -> [Move]
-moves = delete (0,0) . concatMap ((,).fst <<$>> flip take [0..] . snd) . zip [0..]
+moves = delete (0,0) . concatMap (map.(,).fst <*> flip take [0..] . snd) . zip [0..]
 
-reflect :: Bar -> Bar
-reflect = undefined
+allBars :: Bar -> [Bar]
+allBars [] = []
+allBars bar = 
+    [1..head bar] >>= \x ->
+    filter valid . map (x:) $ [] : allBars (tail bar)
 
--- generalize for n
-bars :: Int -> [[Int]]
-bars 3 = 
-    [1..] >>= \x ->
-    [1..x] >>= \y ->
-    [1..y] >>= \z ->
-    return [x,y,z]
+-- unmemoized
+winning_ :: Bar -> Bool
+winning_ [1] = False
+winning_ bar = any not $ winning_ . move bar <$> moves bar
 
-losers :: Int -> [Bar]
-losers = filter (not.winning) . bars
+isWinning :: (Bar -> Bool) -> Bar -> Bool
+isWinning _ [1] = False
+isWinning winning bar = any not $ winning . move bar <$> moves bar
 
-rectangle :: (Int,Int) -> Bar
-rectangle = uncurry replicate
+winning :: Bar -> Bool
+winning = memoize allBars isWinning
 
-type Result = Maybe (Move,Int) -- include distance
+allLosers :: Bar -> [Bar]
+allLosers = Map.keys . Map.filter not . memoized isWinning . allBars
 
-choices :: Bar -> [Bar]
-choices = move <<$>> moves
+winningMoves :: Bar -> [Move]
+winningMoves = memoize allBars win
+    where
+    win _ [1] = []
+    win winningMoves bar = map fst . filter (null.snd) $ also (winningMoves . move bar) <$> moves bar
+                
+--
 
-subbars :: Bar -> [Bar]
-subbars [1] = []
-subbars bar = choices bar >>= id <:> subbars
+memoized :: Ord a => ((a -> b) -> a -> b) -> [a] -> Map a b
+memoized fn xs = Map.fromList $ (,)<*> fn (memoized fn xs !) <$> xs
 
-singles :: Bar -> [Bar]
-singles = undefined
+memoize :: Ord a => (a -> [a]) -> ((a -> b) -> a -> b) -> a -> b
+memoize gen fn = (!) . memoized fn . gen <*> id
 
---cliffs :: Bar -> [Int]
---cliffs = \bar -> zip [0..] $ zipWith (==) bar (tail bar ++ [0]) 
-
-winning bar = win bar bar
---winning = winning'
-
-win :: Bar -> Bar -> Bool
-win bar = (!) . fmap (win' bar) . Map.fromList . map (id<^>id) . (bar:) . subbars $ bar
-    where 
-    win' _ [1] = False
-    win' size bar = or . map (not . win size . move bar) . moves $ bar
-
-
-
+-- solutions:
+-- unmemoized
+-- lazily memoized in finite tree
+    -- requires efficient allBars
+-- lazily memoized in infinite trie
+    -- requires infinite allBars, but...
+    -- can't be done because domain is uncountably infinite (!)
+-- monadically memoized
+-- mutable data-structure / hash table?
 

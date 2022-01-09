@@ -27,8 +27,11 @@ takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = (\(front,back) -> front ++ take 1 back) . break p
 
 also :: (a -> b) -> a -> (a,b)
-also = fmap <. (id <^> id)
+--also = fmap <. (id <^> id)
 --also f x = (x, f x)
+also = (<*>) (,)
+
+mapAlso = map.also
 
 
 swap = \(x,y) -> (y,x)
@@ -50,4 +53,10 @@ x <^> y = (,) <$> x <*> y; infixl 1 <^>
 x +> y = (++) <$> x <*> y; infixl 1 +>
 x <+ y = (++) <$> x <*> const y; infixl 1 <+
 x ++> y = (++) <$> const x <*> y; infixl 1 ++>
+
+dump :: Show a => [a] -> IO ()
+dump = mapM_ print
+
+dumps :: Show a => [[a]] -> IO ()
+dumps xss = putStr . unlines . map (intercalate " ") . (map.map) show $ xss
 
