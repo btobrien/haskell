@@ -4,10 +4,11 @@ import System.Environment
 import Data.Maybe (fromMaybe, listToMaybe)
 import qualified Data.Char as Char
 import Data.Char (ord)
+import Plus
+import Data.List (sortOn)
 
 import Chomp
 
--- add highlights?
 type State = ([Bar],[Bar])
 
 start bar = ([],[bar])
@@ -15,7 +16,7 @@ shower = show . head . snd
 
 main = do
     hSetBuffering stdout NoBuffering
-    size <- rectangle . read . fromMaybe "(7,3)" . listToMaybe <$> getArgs
+    size <- rectangle . read . fromMaybe "(12,3)" . listToMaybe <$> getArgs
     getContents >>= putStr . unlines . map shower . scanl (flip scanner) (start size) . lines
 
 scanner :: String -> State -> State
@@ -26,43 +27,43 @@ parse (cmd:move:_) = (cmd, read move)
 parse _ = ("?", undefined)
 
 exec :: String -> Move -> (State -> State)
-exec "n" = modify . flip move
+exec "m" = modify . flip move
+exec ";" = exec "w"
 exec "w" = modify . const playWinner
-exec "g" = modify . playIfWinner
+exec "M" = modify . playIfWinner
 exec "o" = const undo
 exec "O" = const (undo.undo)
 exec "i" = const redo
 exec "I" = const (redo.redo)
 exec "?" = const id
-exec str | str == "N" || Char.isNumber (head str) = modify . \move -> playWinnerOrRandom (str ++ show move) -- could also seed from redo stack
-exec str = modify . \move -> playRandom (str ++ show move)
+exec str | all Char.isNumber str = modify . const (playWinnerOrRandom (read str))
+exec str = modify . const (playRandom (sum (map ord str)))
 
---exec "x" = -- highlight red
---exec "c" = -- highlight green
---exec "a" = -- show answers
-
-
--- highlights
--- play random but prefer "smaller" moves
-
-playRandom :: String -> (Bar -> Bar)
-playRandom char bar = let
+playRandom :: Int -> (Bar -> Bar)
+playRandom n bar = let
     mvs = moves bar
     in
     if null mvs then bar
-    else move bar . (moves bar!!) . (`mod`length (moves bar)) . sum . map ord $ char
+    else -- randomize, but prefer larger bars..
+    let bars = reverse . sortOn sum $ (map.move<*>moves) bar
+    in
+    bars !! squish (length bars) n
+
+squish :: Int -> Int -> Int
+squish max = (`div`(max^4)) . (^5) . (`mod`max)
 
 modify :: (Bar -> Bar) -> (State -> State)
 modify f state@(_,(x:xs)) = 
     if f x == x then state else ([], f x : x : xs)
 
-playWinnerOrRandom :: String -> (Bar -> Bar)
-playWinnerOrRandom str bar = let
+playWinnerOrRandom :: Int -> (Bar -> Bar)
+playWinnerOrRandom n bar = let
     new = playWinner bar
     in
-    if new == bar then playRandom str bar else new
+    if new == bar then playRandom n bar else new
 
 playIfWinner :: Move -> Bar -> Bar
+playIfWinner _ [] = []
 playIfWinner x bar = let 
     new = move bar x
     in
@@ -71,9 +72,12 @@ playIfWinner x bar = let
         else bar
 
 playWinner :: Bar -> Bar
-playWinner = \bar -> fromMaybe bar . fmap (move bar) . listToMaybe . winningMoves $ bar
+playWinner [] = []
+playWinner bar = 
+    fromMaybe bar . fmap (move bar) .
+    listToMaybe . winningMoves $ bar
 
--- zipper pattern
+-- zipper
 undo :: State -> State
 undo (ys,[x]) = (ys,[x])
 undo (ys,x:xs) = (x:ys,xs)

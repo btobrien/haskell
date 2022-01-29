@@ -1,7 +1,9 @@
 #!/bin/bash
 
-mover=$1
-map=$2
+source ~/.config/chomp/import.sh
+
+mover="move $1"
+map="show"
 
 $mover </dev/null | $map | grep . | sed 's/./ /g' >cleaner
 clean_height=$(wc -l <cleaner)
@@ -21,7 +23,7 @@ tput cnorm
 tail -1 <positions | tr -d '[' | tr -d ']' | tr ',' '\n' >edges
 
 stty -echo
-trap "kill $!; tput cud $((height - 1)); stty echo" EXIT 
+trap "kill $(jobs -p); tput cud $((height - 1)); stty echo" EXIT 
 
 function move 
 {
@@ -33,7 +35,7 @@ function move
 	after=$(wc -l <positions)
 	while (( before == after )); do
 		after=$(wc -l <positions)
-		sleep '.05'
+		sleep '.05' # better option than busy-waiting?
 	done
 	cat cleaner
     tput cuu $clean_height
@@ -44,21 +46,21 @@ function move
     (( $x == 0 )) || tput cuf $((2 * x))
     tput cnorm
 	tail -1 <positions | tr -d '[' | tr -d ']' | tr ',' '\n' >edges
+	width=$(tail -1 <positions | $map | head -n1 | wc -m)
+    width=$((width/2))
 }
 
 function down
 {
     tput cud1
+    ((y++))
     if (( $x != 0 )); then
         tput cuf $((2 * x))
         edge=$(head -n$x <edges | tail -n1)
-        if (( $edge == $y )); then
+        if (( $edge < $y )); then
             tput cuu1
-        else
-            ((y++))
+            ((y--))
         fi
-    else
-        ((y++))
     fi
 }
 
@@ -95,11 +97,19 @@ while read -n1 char; do
     elif [ "$char" == 'l' ]; then
         (( $x == $((width - 1)) )) || right
     elif [ "$char" == '' ]; then
-        move 'z'
-    elif [ "$char" == 'v' ]; then #response
-        move 'n'
+        move 'M' # test winner
+    elif [ "$char" == 'u' ]; then
+        move "-$((RANDOM % 100))" # just random
+    elif [ "$char" == 'v' ]; then
+        move 'm'  # move
 		sleep '0.5'
-        move 'w'
+        move 'w'  # winner
+    elif [ "$char" == 'n' ]; then
+        move 'm'  # move
+		sleep '0.5'
+        move $((RANDOM % 100)) # win/random
+    elif [ "$char" == 'N' ]; then
+        move $((RANDOM % 100))
     else
         move "$char"
     fi

@@ -40,19 +40,25 @@ swap = \(x,y) -> (y,x)
 on process view x y = process (view x) (view y); infixr 8 `on`
 over process (viewx,viewy) x y = process (viewx x) (viewy y)
 
-x <<$>> y = (<$>) <$> x <*> y; infixl 1 <<$>>
-x <&&> y = (&&) <$> x <*> y; infixl 1 <&&>
-x <||> y = (||) <$> x <*> y; infixl 1 <||>
-x <++> y = (++) <$> x <*> y; infixl 2 <++>
-x <:> y = (:) <$> x <*> y; infixl 2 <:>
-x <.> y = (.) <$> x <*> y; infixl 1 <.>
-x .> y = (.) <$> const x <*> y; infixl 1 .>
-x <. y = (.) <$> x <*> const y; infixl 1 <.
-x <==> y = (==) <$> x <*> y; infixl 2 <==>
-x <^> y = (,) <$> x <*> y; infixl 1 <^>
-x +> y = (++) <$> x <*> y; infixl 1 +>
-x <+ y = (++) <$> x <*> const y; infixl 1 <+
-x ++> y = (++) <$> const x <*> y; infixl 1 ++>
+groupOn fn = groupBy ((==) `on` fn)
+
+x <<$>> y = (<$>) . x <*> y; infixl 1 <<$>>
+x <&&> y = (&&) . x <*> y; infixl 1 <&&>
+x <||> y = (||) . x <*> y; infixl 1 <||>
+x <++> y = (++) . x <*> y; infixl 2 <++>
+x <:> y = (:) . x <*> y; infixl 2 <:>
+x <.> y = (.) . x <*> y; infixl 1 <.>
+x .> y = (.) . const x <*> y; infixl 1 .>
+x <. y = (.) . x <*> const y; infixl 1 <.
+x <==> y = (==) . x <*> y; infixl 2 <==>
+x <^> y = (,) . x <*> y; infixl 1 <^>
+x +> y = (++) . x <*> y; infixl 1 +>
+x <+ y = (++) . x <*> const y; infixl 1 <+
+x ++> y = (++) . const x <*> y; infixl 1 ++>
+x <<> y = (<) . x <*> y; infixl 2 <<>
+x <>> y = (>) . x <*> y; infixl 2 <>>
+x <+> y = (+) . x <*> y; infixl 2 <+>
+x <-> y = (-) . x <*> y; infixl 2 <->
 
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
