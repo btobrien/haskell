@@ -2,6 +2,7 @@
 module Sage where
 
 import Data.Group
+import Data.Group.Action
 import Data.Group.Modulo
 import Data.Group.Units
 import Data.Group.Permutation

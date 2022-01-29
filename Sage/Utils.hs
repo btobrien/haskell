@@ -22,7 +22,11 @@ powerset' = filterM (const [False,True])
 
 pairs xs = (,) <$> xs <*> xs
 thruples xs = (,,) <$> xs <*> xs <*> xs
-also f x = (x, f x)
+
+also :: (a -> b) -> a -> (a,b)
+also = ((,)<*>)
+
+mapAlso = map.also
 
 ifhead :: ([a] -> b) -> [a] -> Maybe b
 ifhead f xs = if null xs then Nothing else Just (f xs)
@@ -135,6 +139,18 @@ pack = map concat .: pack'
         chosen = pack' (n - length xs) (filter (null . intersect xs) xss)
         notChosen = pack' n xss
 
+-- parition on equivalence classes
+classes :: (a -> a -> Bool) -> [a] -> [[a]]
+classes _ [] = []
+classes relation (x:xs) = let
+    (yeps,nopes) = partition (relation x) xs
+    in
+    (x:yeps) : classes relation nopes
+
+-- parition on equivalence classes
+classesOn :: Eq b => (a -> b) -> [a] -> [[a]]
+classesOn = classes . (on (==))
+
 getArg :: Int -> IO String
 getArg index = fromMaybe "" . listToMaybe . drop index <$> getArgs
 
@@ -170,7 +186,7 @@ normalizeOn :: Ord b => (a -> b) -> [a] -> [a]
 normalizeOn f = map head . groupOn f . sortOn f
 
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
-groupOn = groupBy . ((==)`on`)
+groupOn = groupBy . (on (==))
 
 -- we have more efficient impls of these
 sortOn' :: Ord b => (a -> b) -> [a] -> [a]

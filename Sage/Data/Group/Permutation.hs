@@ -10,6 +10,7 @@ import Utils
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
 import Data.Group
+import Data.Group.Action
 --import Data.Hashable (hash)
 
 factorial :: Int -> Int
@@ -39,7 +40,7 @@ recycle f = filter ((>1).length) . unfold popcycle . sort . nub
 newtype Permutation a = P [Cycle a]; cyclesOf (P cs) = cs
 
 toPermutation :: Ord a => [a] -> Permutation a
-toPermutation = P . (recycle <$> permute <*> id)
+toPermutation = P . (flip recycle <*> permute)
 
 reduce :: Ord a => [Cycle a] -> Permutation a
 reduce = P . (recycle <$> through <*> concat)
@@ -119,6 +120,10 @@ selectPermutation = toPermutation .: mash
 selectEvenPermutation :: Ord a => Int -> [a] -> Permutation a
 selectEvenPermutation n xs = head [ a | m <- [n..], let a = selectPermutation m xs, alternate a]
 
+impliedSet :: Ord a => [Permutation a] -> [a]
+impliedSet = nub . concatMap elements
 
+permutationOrbits :: Ord a => [Permutation a] -> [[a]]
+permutationOrbits = flip orbits apply <*> impliedSet 
 
 

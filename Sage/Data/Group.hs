@@ -3,6 +3,7 @@ module Data.Group where
 
 import Data.Monoid
 import Data.List hiding (cycle)
+import Data.Maybe
 import Prelude hiding (cycle)
 import Control.Applicative
 import Control.Monad
@@ -134,7 +135,8 @@ subgroupsWithOrder withOrder xs = do
     return (identity:g)
 
 subgroups :: Group a => [a] -> [[a]]
-subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
+--subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs +|+ subgroupsWithOrder(==n) xs
+subgroups xs = let n = largestDivisor (length xs) in subgroupsWithOrder(<n) xs ++ subgroupsWithOrder(==n) xs
 
 setsFrom :: Group a => (a -> [a] -> [a]) -> [a] -> [a] -> [[a]] 
 setsFrom f hs gs = normalize [ sort (f g hs) | g <- gs]
@@ -179,7 +181,7 @@ commutes :: Group a => [a] -> a -> Bool
 commutes xs x = all (commute x) xs
 
 center :: Group a => [a] -> [a]
-center = normalize . (filter <$> commutes <*> id)
+center = (.) normalize $ flip filter <*> commutes
 
 instance (Group a, Group b) => Group (a,b) where
     inverse (a,b) = (inverse a, inverse b)
