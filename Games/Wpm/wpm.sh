@@ -2,15 +2,15 @@
 
 dir=~/.config/wpm
 mkdir -p $dir
+cd $dir
 
-text=$dir/text.txt
-if ! cp $1 $text 2>/dev/null; then
-	numwords=$1
-	shuf $dir/1000words.txt | head -n$numwords | fmt >$text
+if ! cp $1 text 2>/dev/null; then
+	numwords=${1:-30}
+	shuf 1000words.txt | head -n$numwords | fmt >text
 fi
-cat $text
+cat text
 
-textlen=$(wc -l <"$text")
+textlen=$(wc -l <"text")
 tput cuu $textlen
 
 stty -echo
@@ -44,7 +44,7 @@ function back
 	elif [ $y != '1' ]; then
 		tput cuu1
 		(( y-- ))
-		line=$(head -n$y <$text | tail -1)
+		line=$(head -n$y <text | tail -1)
 		linelen=$(wc -c <<<"$line")
 		(( linelen-- ))
 		tput cuf $linelen
@@ -57,7 +57,7 @@ function newline
 	echo
 	x=0
 	(( y++ ))
-	line=$(head -n$y <$text | tail -1)
+	line=$(head -n$y <text | tail -1)
 	linelen=$(wc -c <<<"$line")
 	(( linelen-- ))
 }
@@ -65,11 +65,11 @@ function newline
 x=0
 y=1
 
-line=$(head -1 <$text)
+line=$(head -1 <text)
 linelen=$(wc -c <<<"$line")
 (( linelen-- ))
 
-words=$(wc -w <$text)
+words=$(wc -w <text)
 words60=$(( 60 * words ))
 
 function timestamp {
