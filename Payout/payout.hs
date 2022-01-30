@@ -4,14 +4,27 @@ import Data.List
 import Control.Monad
 import System.Exit
 import Data.Char
+import Control.Applicative
 import System.IO
 
-import Player
+granularity = 2
+scale :: Double -> Int
+scale = floor . (granularity*)
 
-die x = hPutStrLn stderr x >> exitWith (ExitFailure 1)
+scaleBack :: Int -> Double
+scaleBack = (/granularity) . fromIntegral
 
-main = either printError printAll . calculatePayouts . readPlayers =<< getContents
-    where printError = (die.) $ "ERROR: results add to "++> show.scaleBack
+data Player = Player { result :: Int, name :: String } deriving (Eq, Ord)
+instance Read Player where readsPrec _ = (\x->[(x,"")]) . (Player <$> scale.read.head.tail <*> head) . words
+instance Show Player where show = name <+" "+> show.scaleBack.result
+
+readPlayers :: String -> [Player]
+readPlayers = map read . filter (not.all isSpace) . lines
+
+main = either printError (mapM_ print) . calculatePayouts . readPlayers =<< getContents
+    where
+    printError = (die.) $ "ERROR: results add to "++> show.scaleBack
+    die x = hPutStrLn stderr x >> exitWith (ExitFailure 1)
 
 data Payout = Payout { payout :: Int, sender :: String, receiver :: String } deriving (Eq, Ord)
 instance Show Payout where show = sender <+" -> "+> receiver <+": "+> show.scaleBack.payout
@@ -36,3 +49,13 @@ from player adjust = (if adjusted == 0 then id else reinsert player) . delete pl
     where
     adjusted = adjust . result $ player
     reinsert = (:) . Player adjusted . name 
+
+--
+
+p <++> p' = (++) <$> p <*> p'; infixl 8 <++>
+p +> p' = (++) <$> p <*> p'; infixl 8 +>
+p <+ p' = (++) <$> p <*> const p'; infixl 8 <+
+p ++> p' = (++) <$> const p <*> p'; infixl 8 ++>
+
+on :: (a -> a -> b) -> (c -> a) -> c -> c -> b
+on process view x y = process (view x) (view y)
