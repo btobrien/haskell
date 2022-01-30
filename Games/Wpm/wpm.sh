@@ -1,8 +1,6 @@
 #!/bin/bash
 
-dir=~/.config/wpm
-mkdir -p $dir
-cd $dir
+cd ~/.config/wpm
 
 if ! cp $1 text 2>/dev/null; then
 	numwords=${1:-30}
@@ -14,52 +12,46 @@ textlen=$(wc -l <"text")
 tput cuu $textlen
 
 stty -echo
-old_IFS=$IFS
-IFS=""
+old_IFS=$IFS; IFS=""
 trap "tput cud $textlen; tput sgr0; stty echo; IFS=$old_IFS" EXIT
 
 tput setaf 2 # set green
-white='\033[0m'
-red='\033[0;31m'
-green='\033[0;32m'
+white='\033[0m'; red='\033[0;31m'; green='\033[0;32m'
 
-function wrong
-{
+function wrong {
 	if [ "$key" == " " ]; then
 		printf "${red}_${green}"
     else
 		printf "${red}${key}${green}"
 	fi
-	(( x++ ))
+	((x++))
 }
 
-function back
-{
-	if [ $x != '0' ]; then
+function back {
+    if (($x != 0)); then
 		tput cub1
-		(( x-- ))
+		((x--))
 		next=${line:x:1}
 		printf "${white}${next}${green}"
 		tput cub1
-	elif [ $y != '1' ]; then
+    elif (($y != 1)); then
 		tput cuu1
-		(( y-- ))
+		((y--))
 		line=$(head -n$y <text | tail -1)
 		linelen=$(wc -c <<<"$line")
-		(( linelen-- ))
+		((linelen--))
 		tput cuf $linelen
 		x=$linelen
 	fi
 }
 
-function newline 
-{
+function newline {
 	echo
 	x=0
-	(( y++ ))
+	((y++))
 	line=$(head -n$y <text | tail -1)
 	linelen=$(wc -c <<<"$line")
-	(( linelen-- ))
+	((linelen--))
 }
 
 x=0
@@ -67,10 +59,10 @@ y=1
 
 line=$(head -1 <text)
 linelen=$(wc -c <<<"$line")
-(( linelen-- ))
+((linelen--))
 
 words=$(wc -w <text)
-words60=$(( 60 * words ))
+words60=$((60 * words))
 
 function timestamp {
     perl -MTime::HiRes=time -e 'printf "%.3f\n", time'
@@ -82,16 +74,16 @@ start=$(timestamp)
 while read -n1 key; do
 	next=${line:x:1}
     key=$(cat -v <<<$key)
-    if (( $x == $linelen )) && [[ "$key" != '^H' ]]; then
-        if (( $y == $textlen )); then
+    if (($x == $linelen)) && [ "$key" != '^H' ]; then
+        if (($y == $textlen)); then
             finish=$(timestamp)
 			echo
 			break
 		fi
 		newline
 	elif [ "$key" == "$next" ]; then
-		printf "$key"; (( x++ ))
-	elif [[ "$key" == '^H' ]]; then
+		printf "$key"; ((x++))
+	elif [ "$key" == '^H' ]; then
 		back
 	else
 		wrong
