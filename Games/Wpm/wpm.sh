@@ -18,12 +18,6 @@ old_IFS=$IFS
 IFS=""
 trap "tput cud $textlen; tput sgr0; stty echo; IFS=$old_IFS" EXIT
 
-backspace=$(cat << eof
-0000000 005177
-0000002
-eof
-)
-
 tput setaf 2 # set green
 white='\033[0m'
 red='\033[0;31m'
@@ -78,26 +72,33 @@ linelen=$(wc -c <<<"$line")
 words=$(wc -w <$text)
 words60=$(( 60 * words ))
 
-start=$(date +%s.%3N)
+function timestamp {
+    perl -MTime::HiRes=time -e 'printf "%.3f\n", time'
+}
+# date +%s.%3N not supported on macos
+
+start=$(timestamp)
+
 while read -n1 key; do
 	next=${line:x:1}
-	if [ $x == $linelen ] && [[ $(od <<<"$key") != "$backspace" ]]; then
-		if [ $y == $textlen ]; then
-			finish=$(date +%s.%3N)
+    key=$(cat -v <<<$key)
+    if (( $x == $linelen )) && [[ "$key" != '^H' ]]; then
+        if (( $y == $textlen )); then
+            finish=$(timestamp)
 			echo
 			break
 		fi
 		newline
 	elif [ "$key" == "$next" ]; then
 		printf "$key"; (( x++ ))
-	elif [[ $(od <<<"$key") = "$backspace" ]]; then
+	elif [[ "$key" == '^H' ]]; then
 		back
 	else
 		wrong
 	fi
 done
 
-seconds=$(bc <<<"scale=3; $finish - ($start + 0.5)")
+seconds=$(bc <<<"scale=3; $finish - $start")
 wpm=$(bc <<<"scale=1; $words60/$seconds")
 tput setaf 3 # set yellow
 echo $wpm
