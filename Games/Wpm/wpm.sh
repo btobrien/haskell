@@ -83,7 +83,7 @@ while read -n1 key; do
 		newline
 	elif [ "$key" == "$next" ]; then
 		printf "$key"; ((x++))
-	elif [ "$key" == '^H' ]; then
+	elif [ "$key" == '^?' ] || [ "$key" == '^H' ]; then
 		back
 	else
 		wrong
