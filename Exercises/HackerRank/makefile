@@ -1,11 +1,11 @@
 
-all : sierpinski clean
+all : sier clean
 
-sierpinski :
-	mkdir -p ~/.config/sierpinski
-	ghc -o ~/.config/sierpinski/sierpinski sierpinski.hs
-	cp sierpinski.sh ~/bin/sierpinski
-	which center
+sier :
+	mkdir -p ~/.config/sier
+	ghc -o ~/.config/sier/sierpinski sierpinski.hs
+	cp sierpinski.sh ~/bin/sier
+	cp ~/bin/center ~/.config/sier/center
 
 recursion :
 	ghci Recursion.hs <<<""
