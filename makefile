@@ -1,5 +1,5 @@
 
-all : clone hanoi tile coat noise sage
+all : clone hanoi tile coat noise sage clean
 
 clone :
 	make clone -C Utils
@@ -24,6 +24,12 @@ noise :
 
 sage :
 	make -C Sage
+
+chomp :
+	make -C Games/Chomp
+
+wpm :
+	make -C Games/Wpm
 
 clean:
 	find . -name '*.hi' -delete

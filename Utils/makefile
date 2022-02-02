@@ -1,4 +1,6 @@
 
+all : clone coat plus flip center
+
 clone : 
 	cp clone.sh ~/bin/clone
 
@@ -11,3 +13,5 @@ plus :
 flip :
 	cp flip.sh ~/bin/flip
 
+center :
+	cp center.sh ~/bin/center
