@@ -29,11 +29,9 @@ function wrong {
 
 function back {
     if (($x != 0)); then
-		tput cub1
 		((x--))
 		next=${line:x:1}
-		printf "${white}${next}${green}"
-		tput cub1
+		printf "\b${white}${next}${green}\b"
     elif (($y != 1)); then
 		tput cuu1
 		((y--))
