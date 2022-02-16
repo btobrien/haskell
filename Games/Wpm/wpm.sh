@@ -72,7 +72,7 @@ start=$(timestamp)
 while read -n1 key; do
 	next=${line:x:1}
     key=$(cat -v <<<$key)
-    if (($x == $linelen)) && [ "$key" != '^H' ]; then
+	if (($x == $linelen)) && [ "$key" != '^?' ] && [ "$key" != '^H' ]; then
         if (($y == $textlen)); then
             finish=$(timestamp)
 			echo

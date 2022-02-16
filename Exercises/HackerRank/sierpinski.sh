@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/.config/sierpinski
+cd ~/.config/sier
 
 if [ "$1" == '' ] || grep '\.' <<<$1 >/dev/null; then
     throttle=${1:-'0.5'}
@@ -20,12 +20,12 @@ function iterate {
     i=$((i % (size + 1)))
     ((i < 0)) && i=$size
     tput setaf $((1 + i))
-    ./sierpinski $size $i | center
+    ./sierpinski $size $i | ./center
     tput cuu $length
 }
 
 tput setaf 1
-./sierpinski $size 0 | center
+./sierpinski $size 0 | ./center
 tput cuu $length
 
 if [ "$throttle" != '' ]; then
