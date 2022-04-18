@@ -73,11 +73,16 @@ runFilter
 # clear suggestion with ^L
 # only support live front filter, but arbitrary back filters can be applied with new word-row
 # highligh letters according to "why" they're there in suggestion matched/present/prefix/suggested
+# switch between legal guesses, and potential solutions
+# be able to play today's wordle
 
 write=true
 while read -n1 key; do
-    key=$(cat -v <<<$key)
+    key=$(cat -v <<<"$key")
+	echo "$key" >key
     if $write; then
+		# don't process start of arrow keys
+		grep '\[' <<<"$key" >/dev/null && continue
         if [ "$key" == '^?' ] || [ "$key" == '^H' ]; then
             if (($x != 0)); then
                 ((x--))
@@ -89,13 +94,13 @@ while read -n1 key; do
             tput cub $linelen
             write=false
             word=$(sed 's/.^.//g' <word)
-        elif [ "$key" == '^N' ]; then
+        elif [ "$key" == '^N' ] || [ "$key" == 'B' ]; then
             if ((numFiltered != 0)); then
                 ((y++))
                 y=$((y % ((numFiltered+1))))
             fi
             printCurrentSuggestion
-        elif [ "$key" == '^P' ]; then
+        elif [ "$key" == '^P' ] || [ "$key" == 'A' ]; then
             if ((numFiltered != 0)); then
                 ((y--))
                 ((y < 0)) && y=$numFiltered
