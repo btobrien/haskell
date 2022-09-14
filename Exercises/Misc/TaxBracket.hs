@@ -53,15 +53,6 @@ penaltyPoint income = listToMaybe . map fst . filter ((<0).snd) . map (also (joi
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print
 
-explore1 =
-    dump . 
-    takeWhile ((>173).snd) .
-    filter ((>648) . uncurry (+)) .
-    filter (uncurry (>)) .
-    map (fmap ((/1000).fromJust)) .
-    dropWhile ((Nothing==).snd) .
-    map (also (penaltyPoint.thousand)) $ [0,1..1000]
-
 explore =
     dump . 
     takeWhile ((>173).snd) .
@@ -69,7 +60,7 @@ explore =
     filter (uncurry (>)) .
     map (fmap ((/1000).fromJust)) .
     dropWhile ((Nothing==).snd) .
-    map (also (penaltyPoint.thousand)) $ [0,1..2000]
+    map (also (penaltyPoint.thousand)) $ [0,1..1000]
 
 pairMap :: (a -> b) -> (a,a) -> (b,b)
 pairMap fn = (,).fn.fst <*> fn.snd
