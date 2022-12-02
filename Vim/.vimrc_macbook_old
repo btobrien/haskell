@@ -1,0 +1,79 @@
+
+syntax on
+filetype plugin indent on
+set tabstop=4  "number of visual spaces per <tab>"
+set softtabstop=4 "number of spaces inserted/removed when editing"
+set expandtab "turns <tab> into spaces"
+set shiftwidth=4 "how many spaces > and < move"
+set incsearch "search as letters are entered"
+set hlsearch "highlight matches"
+set smartindent
+"set cindent
+set autoindent
+set hidden
+set noruler
+set nowrap
+set ignorecase
+set smartcase
+set path=$PWD/**
+set fillchars+=vert:\ 
+let g:netrw_banner=0
+
+set foldtext=v:folddashes
+inoremap <c-v> [FEN ""]<esc>hi
+nnoremap mM _f"ya":w !shapes <<<<c-r>"<cr>
+nnoremap M _f"ya":w !brd set vim <<<<c-r>"<cr>_
+nnoremap Z }jzfip}j
+nnoremap <c-c> <esc>
+nnoremap m: :w !
+nnoremap Y y$
+vnoremap $ $h
+nnoremap mf za
+nnoremap mF zA
+nnoremap J }j
+nnoremap K k{j
+
+"paste"
+nnoremap <C-p> p`[v`]>
+nnoremap yp "0p
+nnoremap yP "0P
+
+"formatting"
+nnoremap <space>j mmo<esc>`m
+nnoremap <space>k mmO<esc>`m
+nnoremap <space>h J
+nnoremap <space>l i<cr><esc>
+nnoremap <space>; i<cr><tab><esc>
+
+"buffers"
+nnoremap <bs><bs> :argdelete %<cr>
+nnoremap ++ :exe"try\n argdelete! %\n catch/:E480:/\n\n endtry"<cr>:argadd! %<cr>
+":nn K :exe"try\n prev!\n catch/:E164:/\n last!\n endtry"<cr>
+":nn J :exe"try\n next!\n catch/:E165:/\n rewind!\n endtry"<cr>
+nnoremap <c-j> :cnext<cr>
+nnoremap <c-k> :cprev<cr>
+
+"search"
+nnoremap <silent> <C-l> :noh<cr><C-l>
+vnoremap / y/\V<C-r>"<cr>gv
+vnoremap m y/\V<C-r>"<cr><C-o>
+inoremap <up> <ESC>/\V<C-r>-<cr>
+inoremap <c-p> <ESC>/\V<C-r>-<cr>
+nnoremap mm viwy/\V\<<C-r>"\><cr><C-O>
+nnoremap gr mL"gyiw :!grep -wnrI '<C-r>g' . >~/.vim/quickfix.out<cr>:cf ~/.vim/quickfix.out<cr>
+nnoremap gR "gyiw :w !grep -wrnI '<C-r>g' .<cr>
+nnoremap gl mL:cf ~/.vim/quickfix.out<cr>
+nnoremap gL :cf ~/.vim/quickfix.out<cr>:w !cat ~/.vim/quickfix.out<cr>
+"haskell"
+nnoremap gm mL!lsed 's/\./\//g'<cr>/\u<cr>:noh<cr>"myiWu:find <C-r>m.hs<cr>
+nnoremap gn mL:!grep -wrnI "`sed 's/\//\\\./g' <<<'%<'`" . >~/.vim/quickfix.out<cr>:cf ~/.vim/quickfix.out<cr>
+nnoremap gN :w !grep -wrnI "`sed 's/\//\\\./g' <<<'%<'`" .<cr>
+nnoremap gd mL"gyiw :!grep -wnrI '<C-r>g ::' . >~/.vim/quickfix.out<cr>:cf ~/.vim/quickfix.out<cr>
+nnoremap gD "gyiw :w !grep -wnrI '<C-r>g ::' .<cr>
+"cpp (make toggle)"
+nnoremap gh mL:find `basename %<.h`<cr> 
+nnoremap gp mL:find `basename %<.cpp`<cr>
+
+noh
+"graveyard"
+":command! -nargs=1 Grep normal :let target = <f-args><cr>:w !grep -wrnI <C-r>=target<cr> .<cr>
