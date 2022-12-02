@@ -2,7 +2,11 @@
 
 cd ~/.config/wpm
 
-if ! cp $1 text 2>/dev/null; then
+if [ "$1" == 'wordle' ]; then
+	shift
+	numwords=${1:-30}
+	shuf wordleWords.txt | head -n$numwords | fmt >text
+elif ! cp $1 text 2>/dev/null; then
 	numwords=${1:-30}
 	shuf 1000words.txt | head -n$numwords | fmt >text
 fi

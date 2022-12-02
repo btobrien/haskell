@@ -68,6 +68,7 @@ reflectOn n = reduce
     . take (n`div`2)
     $ modulos n
 
+-- ?
 dihedralOn :: Int -> [Permutation Int]
 dihedralOn n = gen [rotateOn n, reflectOn n]
 
