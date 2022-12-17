@@ -29,7 +29,7 @@ fibs = fib (fibs !!) <$> [0..]
     fib _ 1 = 1
     fib fib' n = fib' (n-1) + fib' (n-2)
 
--- finite memo table
+-- finite memo table (for non-contiguous/sparse keys
 memoized :: Ord a => ((a -> b) -> a -> b) -> [a] -> Map a b
 memoized fn xs = Map.fromList $ (,)<*> fn (memoized fn xs !) <$> xs
 

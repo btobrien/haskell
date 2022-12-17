@@ -29,6 +29,9 @@ also = (<*>) (,)
 
 mapAlso = map.also
 
+both :: (a -> b) -> (a,a) -> (b,b)
+both fn (x,y) = (fn x, fn y)
+
 swap = \(x,y) -> (y,x)
 
 (.:) f g x y = f (g x y) 
@@ -54,6 +57,7 @@ x <<> y = (<) . x <*> y; infixl 2 <<>
 x <>> y = (>) . x <*> y; infixl 2 <>>
 x <+> y = (+) . x <*> y; infixl 2 <+>
 x <-> y = (-) . x <*> y; infixl 2 <->
+x </> y = (/) . x <*> y; infixl 1 </>
 
 dump :: Show a => [a] -> IO ()
 dump = mapM_ print

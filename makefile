@@ -1,6 +1,10 @@
 
 all : clone hanoi tile coat noise sage clean
 
+brew : 
+	# make sure homebrew is installed
+	brew install coreutils ghc cabal-install
+
 clone :
 	make clone -C Utils
 
