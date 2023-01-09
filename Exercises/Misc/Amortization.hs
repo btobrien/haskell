@@ -5,19 +5,22 @@ dump = mapM_ print
 
 f .: g = \x y -> f (g x y)
 
-rate = 0.04625/12
 price = 645000.0
 loan = 483750.0
-ltv = loan/price
-terms = 30*months :: Int
-months = 12
-taxes = 10000 :: Double -- ?
-inflation = 0.03/12 -- simple -- ?
-appreciation = inflation -- ?
+years = 30 :: Int
+rate = 4.625
+capitalGainsTax = 0.15
 
-homeOwners = 300
+monthsOf = (12*)
+monthly = (/1200)
 
-payment = installment terms rate * loan
+interestPercentage years rate = (fromIntegral (monthsOf years) * installment (monthsOf years) (monthly rate)) - 1 
+payment years rate = installment (monthsOf years) (monthly rate) * loan
+
+equityPercentage loanYears rate duration = flip subtract 1 $ amortize (monthsOf loanYears) (monthly rate) !! (monthsOf duration)
+
+--
+--
 
 effectiveRate :: Int -> Double -> Double
 effectiveRate n i = (1 + i/(fromIntegral n))^n - 1
@@ -48,12 +51,30 @@ deltas = (([]:).) $ zipWith (zipWith subtract) <*> tail
 compound :: Double -> [Double]
 compound i = iterate (*(1+i)) 1
 
-inflate :: Double -> [[Double]] -> [[Double]]
-inflate i = zipWith (map . (flip(/))) (compound i)
+-- future bond value of unit dollar cash flow
+futureBondValue n = sum . take n . compound
 
-property :: Double -> Double -> [[Double]]
-property appreciation tax = map (\x -> [x, tax*x]) (compound appreciation)
+gainsAdjustedBondValue :: Double -> Int -> Double -> Double
+gainsAdjustedBondValue gainsTax n rate =
+    let
+    basis = fromIntegral n
+    value = futureBondValue n rate
+    in (1 - gainsTax) * (value - basis) + basis 
+
 
 -- include ltv and appreciation in equity
 -- subtract property taxes / hoi&hoa
 -- account for inflation (assume the property appreciation == inflation?)
+
+investingAdvantage long short interest interestBenefit marketReturns = 
+    let
+    extra = installment (monthsOf short) (monthly (interest - interestBenefit)) - installment (monthsOf long) (monthly interest)
+    loanLeft = amortize (monthsOf long) (monthly interest) !! monthsOf short
+    investments = extra * (gainsAdjustedBondValue capitalGainsTax (monthsOf short) (monthly marketReturns))
+    in
+    --[extra, loanLeft, investments]
+    investments - loanLeft
+
+
+
+
