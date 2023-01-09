@@ -1,5 +1,4 @@
 
-#include <optional>
 #include <bitset>
 #include <iostream>
 #include <vector>
@@ -47,8 +46,7 @@ public:
         return !floorRequests.any();
     }
 
-    // returns true if the elevator is going in the right direction, relative to the floors
-    // (note: copilot wrote this entire function and both these comments...)
+    // returns true if the elevator is going in the right direction, relative to the floors (and not in a reverse pickup)
     bool IsPassing(int floor, Direction direction) const {
         if (IsIdle() || inReversePickup) return false;
         if (this->direction != direction) return false;
@@ -99,7 +97,6 @@ class ElevatorSystem {
             for (auto& elevator : elevators) {
                 if (elevator.IsIdle() || elevator.IsPassing(floor, direction)) {
                     int distance = std::abs(elevator.GetFloor() - floor);
-                    // crazy thing is that it used GetFloor before I wrote it...
                     if (distance < bestDistance) {
                         bestDistance = distance;
                         bestElevator = &elevator;
@@ -122,15 +119,15 @@ class ElevatorSystem {
             for (auto& elevator : elevators) {
                 elevator.Tick();
             }
-            for (auto it = deferredRequests.begin(); it != deferredRequests.end();) {
-                auto& [floor, direction] = *it;
+            for (auto request = deferredRequests.begin(); request != deferredRequests.end();) {
+                auto& [floor, direction] = *request;
                 Elevator* elevator = SelectElevator(floor, direction);
                 if (elevator) {
                     elevator->RequestFloor(floor, direction);
-                    it = deferredRequests.erase(it);
+                    request = deferredRequests.erase(request);
                 }
                 else {
-                    it++;
+                    request++;
                 }
             }
         }
@@ -190,47 +187,4 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
